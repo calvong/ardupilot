@@ -1,0 +1,17 @@
+Note for Arducopter firmware modification
+
+sensor driver:
+Need to mod wscript and make.inc
+
+sensors.cpp:
+sensor func - init + read etc
+
+Copter.h:
+create object + data variables
+declare func prototypes (from sensors.cpp)
+
+systemp.cpp:
+init sensor
+
+ArduCopter.cpp:
+add to schedule
