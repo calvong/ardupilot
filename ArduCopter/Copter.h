@@ -16,7 +16,11 @@
 /*
   This is the main Copter class
  */
-
+<<<<<<< HEAD
+// Test merge 
+=======
+// Test merge
+>>>>>>> da47267859f5e289c1097e9f6218b70ab09a76dc
 ////////////////////////////////////////////////////////////////////////////////
 // Header includes
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +99,8 @@
 #include "AP_Arming.h"
 
 // libraries which are dependent on #defines in defines.h and/or config.h
+#include <AP_FakeSensor/AP_FakeSensor.h>    // always enable
+
 #if BEACON_ENABLED == ENABLED
  #include <AP_Beacon/AP_Beacon.h>
 #endif
@@ -241,6 +247,9 @@ private:
     AP_Baro barometer;
     Compass compass;
     AP_InertialSensor ins;
+
+    AP_FakeSensor pos_sensor;
+    FakeSensor_data pos_data;
 
     RangeFinder rangefinder{serial_manager, ROTATION_PITCH_270};
     struct {
@@ -442,7 +451,7 @@ private:
 #if OSD_ENABLED == ENABLED
     AP_OSD osd;
 #endif
-    
+
     // Variables for extended status MAVLink messages
     uint32_t control_sensors_present;
     uint32_t control_sensors_enabled;
@@ -856,13 +865,15 @@ private:
     int16_t get_throttle_mid(void);
 
     // sensors.cpp
+    void init_FakeSensor(void);
+    void read_FakeSensor(void);
     void read_barometer(void);
     void init_rangefinder(void);
     void read_rangefinder(void);
     bool rangefinder_alt_ok();
     void rpm_update();
     void init_compass();
-    void init_compass_location();
+    void compass_accumulate(void);
     void init_optflow();
     void update_optical_flow(void);
     void compass_cal_update(void);
@@ -929,6 +940,7 @@ private:
     ModeAcro mode_acro;
 #endif
 #endif
+    ModeTunnel mode_tunnel; // tunnel flight mode
     ModeAltHold mode_althold;
 #if MODE_AUTO_ENABLED == ENABLED
     ModeAuto mode_auto;

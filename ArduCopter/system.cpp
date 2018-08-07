@@ -52,7 +52,7 @@ void Copter::init_ardupilot()
 
     // identify ourselves correctly with the ground station
     mavlink_system.sysid = g.sysid_this_mav;
-    
+
     // initialise serial ports
     serial_manager.init();
 
@@ -63,7 +63,7 @@ void Copter::init_ardupilot()
     // Register mavlink_delay_cb, which will run anytime you have
     // more than 5ms remaining in your call to hal.scheduler->delay
     hal.scheduler->register_delay_callback(mavlink_delay_cb_static, 5);
-    
+
     BoardConfig.init();
 #if HAL_WITH_UAVCAN
     BoardConfig_CAN.init();
@@ -86,7 +86,7 @@ void Copter::init_ardupilot()
 
     // Init RSSI
     rssi.init();
-    
+
     barometer.init();
 
     // setup telem slots with serial ports
@@ -216,6 +216,9 @@ void Copter::init_ardupilot()
     barometer.set_log_baro_bit(MASK_LOG_IMU);
     barometer.calibrate();
 
+    // initialise FakeSensor
+    init_FakeSensor();
+
     // initialise rangefinder
     init_rangefinder();
 
@@ -280,7 +283,7 @@ void Copter::init_ardupilot()
 
     // default enable RC override
     copter.ap.rc_override_enable = true;
-    
+
     hal.console->printf("\nReady to FLY ");
 
     // flag that initialisation has completed
@@ -398,7 +401,7 @@ void Copter::update_auto_armed()
 #endif // HELI_FRAME
     }else{
         // arm checks
-        
+
 #if FRAME_CONFIG == HELI_FRAME
         // for tradheli if motors are armed and throttle is above zero and the motor is started, auto_armed should be true
         if(motors->armed() && !ap.throttle_zero && motors->rotor_runup_complete()) {
@@ -549,7 +552,7 @@ void Copter::allocate_motors(void)
             motors_var_info = AP_MotorsHeli_Quad::var_info;
             AP_Param::set_frame_type_flags(AP_PARAM_FRAME_HELI);
             break;
-            
+
         case AP_Motors::MOTOR_FRAME_HELI:
         default:
             motors = new AP_MotorsHeli_Single(copter.scheduler.get_loop_rate_hz());
@@ -581,7 +584,7 @@ void Copter::allocate_motors(void)
         AP_HAL::panic("Unable to allocate AttitudeControl");
     }
     AP_Param::load_object_from_eeprom(attitude_control, ac_var_info);
-        
+
     pos_control = new AC_PosControl(*ahrs_view, inertial_nav, *motors, *attitude_control);
     if (pos_control == nullptr) {
         AP_HAL::panic("Unable to allocate PosControl");
@@ -610,7 +613,7 @@ void Copter::allocate_motors(void)
 
     // reload lines from the defaults file that may now be accessible
     AP_Param::reload_defaults_file(true);
-    
+
     // now setup some frame-class specific defaults
     switch ((AP_Motors::motor_frame_class)g2.frame_class.get()) {
     case AP_Motors::MOTOR_FRAME_Y6:
@@ -632,7 +635,7 @@ void Copter::allocate_motors(void)
     if (motors->get_pwm_type() == AP_Motors::PWM_TYPE_BRUSHED) {
         g.rc_speed.set_default(16000);
     }
-    
+
     if (upgrading_frame_params) {
         // do frame specific upgrade. This is only done the first time we run the new firmware
 #if FRAME_CONFIG == HELI_FRAME
