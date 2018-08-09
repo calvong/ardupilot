@@ -1,5 +1,18 @@
 #include "Copter.h"
 
+// return position info from Odroid
+void Copter::init_FakeSensor(void)
+{
+    pos_sensor.init();
+}
+
+void Copter::read_FakeSensor(void)
+{
+    pos_sensor.update();
+
+    pos_data = pos_sensor.get_data();
+}
+
 // return barometric altitude in centimeters
 void Copter::read_barometer(void)
 {

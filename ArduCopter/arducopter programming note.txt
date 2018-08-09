@@ -5,10 +5,13 @@ Need to mod wscript and make.inc
 
 sensors.cpp:
 sensor func - init + read etc
+line top
 
 Copter.h:
-create object + data variables
-declare func prototypes (from sensors.cpp)
+include header
+line 245-246 -> create object + data variables
+line 864 -> declare func prototypes (from sensors.cpp)
+
 
 systemp.cpp:
 init sensor

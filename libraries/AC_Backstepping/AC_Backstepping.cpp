@@ -19,9 +19,11 @@ void AC_Backstepping::get_pos(int16_t pos_y, int16_t pos_z)
 void AC_Backstepping::update_alt_controller()
 {
     int current_pos_z = _pos_z;
-    float current_vel_z;
+    float current_vel_z = 1;
 
-    
+    // dummy
+    current_pos_z += 1;
+    current_vel_z += 2;
 }
 
 void AC_Backstepping::update_lateral_controller()
