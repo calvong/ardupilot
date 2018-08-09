@@ -84,6 +84,8 @@
 #include <AP_TempCalibration/AP_TempCalibration.h>
 
 #include <AP_FakeSensor/AP_FakeSensor.h>
+#include <AC_TunnelPID/AC_TunnelPID.h>
+#include <AC_Backstepping/AC_Backstepping.h>
 
 // Configuration
 #include "defines.h"
@@ -249,6 +251,8 @@ private:
 
     AP_FakeSensor pos_sensor;
     FakeSensor_data pos_data;
+
+    AC_TunnelPID tunnelPID;
 
     RangeFinder rangefinder{serial_manager, ROTATION_PITCH_270};
     struct {

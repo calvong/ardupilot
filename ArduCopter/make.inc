@@ -66,3 +66,4 @@ LIBRARIES += AP_Devo_Telem
 LIBRARIES += AP_OSD
 LIBRARIES += AP_FakeSensor
 LIBRARIES += AC_Backstepping
+LIBRARIES += AC_TunnelPID
