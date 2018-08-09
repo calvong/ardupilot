@@ -29,6 +29,24 @@
 #define GOBJECTN(v, pname, name, class) { AP_PARAM_GROUP, name, Parameters::k_param_ ## pname, (const void *)&copter.v, {group_info : class::var_info} }
 
 const AP_Param::Info Copter::var_info[] = {
+
+    // @Param:Tunnel_pos_y_p
+    // @DisplayName: p gain for tunnel mode lateral controller
+    GSCALAR(pid_tunnel_pos_y_p, "Tunnel_pos_y_p",   0),
+
+    // @Param:Tunnel_pos_y_i
+    // @DisplayName: p gain for tunnel mode lateral controller
+    GSCALAR(pid_tunnel_pos_y_i, "Tunnel_pos_y_i",   0),
+
+    // @Param:Tunnel_pos_y_d
+    // @DisplayName: p gain for tunnel mode lateral controller
+    GSCALAR(pid_tunnel_pos_y_d, "Tunnel_pos_y_d",   0),
+
+    // @Param:Tunnel_pos_y_imax
+    // @DisplayName: p gain for tunnel mode lateral controller
+    GSCALAR(pid_tunnel_pos_y_imax, "Tunnel_posY_Imax",   TUNNEL_POS_Y_IMAX_DEFAULT),
+
+
     // @Param: SYSID_SW_MREV
     // @DisplayName: Eeprom format version number
     // @Description: This value is incremented when changes are made to the eeprom format

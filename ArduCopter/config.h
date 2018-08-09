@@ -39,6 +39,12 @@
 #error CONFIG_HAL_BOARD must be defined to build ArduCopter
 #endif
 
+
+//////////////////////////////////////////////////////////////////////////////
+// TUNNEL_MODE
+#ifndef TUNNEL_POS_Y_IMAX_DEFAULT
+    #define TUNNEL_POS_Y_IMAX_DEFAULT 10
+#endif
 //////////////////////////////////////////////////////////////////////////////
 // HIL_MODE                                 OPTIONAL
 
