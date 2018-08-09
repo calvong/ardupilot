@@ -83,6 +83,8 @@
 #include <AP_SmartRTL/AP_SmartRTL.h>
 #include <AP_TempCalibration/AP_TempCalibration.h>
 
+#include <AP_FakeSensor/AP_FakeSensor.h>
+
 // Configuration
 #include "defines.h"
 #include "config.h"
@@ -95,8 +97,6 @@
 #include "AP_Arming.h"
 
 // libraries which are dependent on #defines in defines.h and/or config.h
-#include <AP_FakeSensor/AP_FakeSensor.h>    // always enable
-
 #if BEACON_ENABLED == ENABLED
  #include <AP_Beacon/AP_Beacon.h>
 #endif
@@ -872,7 +872,7 @@ private:
     bool rangefinder_alt_ok();
     void rpm_update();
     void init_compass();
-    void compass_accumulate(void);
+    void init_compass_location();
     void init_optflow();
     void update_optical_flow(void);
     void compass_cal_update(void);
@@ -943,8 +943,8 @@ private:
     ModeAcro mode_acro;
 #endif
 #endif
-    ModeTunnel mode_tunnel; // tunnel flight mode
     ModeAltHold mode_althold;
+    ModeTunnel mode_tunnel;
 #if MODE_AUTO_ENABLED == ENABLED
     ModeAuto mode_auto;
 #endif

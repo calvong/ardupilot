@@ -74,7 +74,7 @@
  */
 
 #include "Copter.h"
-// test merge
+
 #define SCHED_TASK(func, rate_hz, max_time_micros) SCHED_TASK_CLASS(Copter, &copter, func, rate_hz, max_time_micros)
 
 /*
@@ -86,14 +86,10 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(rc_loop,              100,    130),
     SCHED_TASK(throttle_loop,         50,     75),
     SCHED_TASK(update_GPS,            50,    200),
-<<<<<<< HEAD
-    // test merge 
-=======
-    SCHED_TASK(read_FakeSensor,        2,    200),  // FakeSensor schedule  
->>>>>>> da47267859f5e289c1097e9f6218b70ab09a76dc
 #if OPTFLOW == ENABLED
     SCHED_TASK(update_optical_flow,  200,    160),
 #endif
+    SCHED_TASK(read_FakeSensor,        2,    200),
     SCHED_TASK(update_batt_compass,   10,    120),
     SCHED_TASK(read_aux_all,          10,     50),
     SCHED_TASK(arm_motors_check,      10,     50),
@@ -125,7 +121,6 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #endif
     SCHED_TASK(three_hz_loop,          3,     75),
     SCHED_TASK_CLASS(AP_ServoRelayEvents,  &copter.ServoRelayEvents,      update_events, 50,     75),
-    SCHED_TASK(compass_accumulate,   100,    100),
     SCHED_TASK_CLASS(AP_Baro,              &copter.barometer,           accumulate,      50,  90),
 #if PRECISION_LANDING == ENABLED
     SCHED_TASK(update_precland,      400,     50),
@@ -464,6 +459,9 @@ void Copter::one_hz_loop()
     // indicates that the sensor or subsystem is present but not
     // functioning correctly
     update_sensor_status_flags();
+
+    // init compass location for declination
+    init_compass_location();
 }
 
 // called at 50hz
