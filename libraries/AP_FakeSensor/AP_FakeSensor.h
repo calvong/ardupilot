@@ -4,6 +4,7 @@
 #include <AP_Param/AP_Param.h>
 #include <AP_Math/AP_Math.h>
 #include <ctype.h>
+#include <GCS_MAVLink/GCS.h>
 
 #define ODROID_BAUDRATE 115200
 

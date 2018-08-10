@@ -16,7 +16,8 @@ void AP_FakeSensor::init()
 
     uart->begin(ODROID_BAUDRATE);
 
-    hal.console->printf("Init fake sensor ...\n");
+    //hal.console->printf("Init fake sensor ...\n");
+    gcs().send_text(MAV_SEVERITY_INFO, "Initialising fake sensor communication with Odroid...\n");
     //TODO: need to do init handshake with odroid
 }
 
@@ -74,7 +75,7 @@ void AP_FakeSensor::update()
             if (linebuf_len == sizeof(linebuf)) {linebuf_len = 0;}
         }
     }
-
+    gcs().send_text(MAV_SEVERITY_INFO, "What's up %d\n", _data.pos_y);
     // signal to get another reading
     uart->write('g');
 }
