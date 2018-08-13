@@ -11,7 +11,7 @@ AP_FakeSensor::AP_FakeSensor()
 
 void AP_FakeSensor::init()
 {
-    uart = hal.uartE;  // using 2nd GPS port
+    uart = hal.uartC;  // using telem1 port
     if (uart == nullptr)    {return;}
 
     uart->begin(ODROID_BAUDRATE);
@@ -24,6 +24,7 @@ void AP_FakeSensor::init()
 void AP_FakeSensor::update()
 {
     if (uart == nullptr)    {return;}
+
 
     int16_t nbytes = uart->available();
 
@@ -77,7 +78,10 @@ void AP_FakeSensor::update()
     }
     gcs().send_text(MAV_SEVERITY_INFO, "What's up %d\n", _data.pos_y);
     // signal to get another reading
-    uart->write('g');
+    uart->set_blocking_writes(false);
+    uart->write("abcd2345423");
+    uart->set_blocking_writes(true);
+    //gcs().send_text(MAV_SEVERITY_INFO, "Sent g...\n");
 }
 
 FakeSensor_data AP_FakeSensor::get_data()

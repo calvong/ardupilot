@@ -6,7 +6,8 @@
 #include <ctype.h>
 #include <GCS_MAVLink/GCS.h>
 
-#define ODROID_BAUDRATE 115200
+
+#define ODROID_BAUDRATE 921600
 
 #define DATA_BUF_SIZE 13 // 13 char in a message
 #define FAR_THRESHOLD 2000 // mm
