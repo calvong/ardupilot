@@ -44,8 +44,8 @@ void GCS_MAVLINK::handle_serial_control(const mavlink_message_t *msg)
 
     switch (packet.device) {
     case SERIAL_CONTROL_DEV_TELEM1:
-        stream = port = hal.uartC;
-        lock_channel(MAVLINK_COMM_1, exclusive);
+        stream = port = hal.uartB;
+        //lock_channel(MAVLINK_COMM_1, exclusive);  // Using TELEM1 for fake sensor instead!!
         break;
     case SERIAL_CONTROL_DEV_TELEM2:
         stream = port = hal.uartD;
@@ -104,7 +104,7 @@ void GCS_MAVLINK::handle_serial_control(const mavlink_message_t *msg)
                 if (n > packet.count) {
                     n = packet.count;
                 }
-                stream->write(data, n);                
+                stream->write(data, n);
                 data += n;
                 count -= n;
             }
@@ -120,7 +120,7 @@ void GCS_MAVLINK::handle_serial_control(const mavlink_message_t *msg)
 
 more_data:
     // sleep for the timeout
-    while (packet.timeout != 0 && 
+    while (packet.timeout != 0 &&
            stream->available() < (int16_t)sizeof(packet.data)) {
         hal.scheduler->delay(1);
         packet.timeout--;
@@ -160,7 +160,7 @@ more_data:
     }
 
     // and send the reply
-    _mav_finalize_message_chan_send(chan, 
+    _mav_finalize_message_chan_send(chan,
                                     MAVLINK_MSG_ID_SERIAL_CONTROL,
                                     (const char *)&packet,
                                     MAVLINK_MSG_ID_SERIAL_CONTROL_MIN_LEN,

@@ -18,3 +18,8 @@ init sensor
 
 ArduCopter.cpp:
 add to schedule
+
+
+* to stop GCS to send mavlink msg to TELEM1
+line 66, 101 -> GCS_Common.cpp
+line 47 -> GCS_serial_control.cpp
