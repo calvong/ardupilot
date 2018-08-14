@@ -54,6 +54,6 @@ public:
 private:
     AP_HAL::UARTDriver *uart = nullptr;
     FakeSensor_data _data;
-    char linebuf[DATA_BUF_SIZE];
-    uint8_t linebuf_len = 0;
+    char _linebuf[DATA_BUF_SIZE];
+    uint8_t _linebuf_len = 0;
 };
