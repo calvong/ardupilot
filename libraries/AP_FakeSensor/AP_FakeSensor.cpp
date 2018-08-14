@@ -40,40 +40,40 @@ void AP_FakeSensor::update()
             // pos y
             for (size_t i = 0; i < 4; i++)
             {
-                d[i] = linebuf[i+1];
+                d[i] = _linebuf[i+1];
             }
             _data.pos_y = atoi(d);
 
-            if (linebuf[5] == '-')  _data.pos_y *= -1;
+            if (_linebuf[5] == '-')  _data.pos_y *= -1;
 
             // pos z
             for (size_t i = 0; i < 4; i++)
             {
-                d[i] = linebuf[i+6];
+                d[i] = _linebuf[i+6];
             }
             _data.pos_z = atoi(d);
 
-            if (linebuf[10] == '-')  _data.pos_z *= -1;
+            if (_linebuf[10] == '-')  _data.pos_z *= -1;
 
             // assign status
-            int inT = (int) linebuf[11] - 48;   // in Tunnel?
+            int inT = (int) _linebuf[11] - 48;   // in Tunnel?
 
-            if (inT && linebuf[0] == '$')
+            if (inT && _linebuf[0] == '$')
                 _data.status = Good;
-            else if (inT && linebuf[0] != '$')    // not a complete msg
+            else if (inT && _linebuf[0] != '$')    // not a complete msg
                 _data.status = Bad;
             else if (abs(_data.pos_y) > FAR_THRESHOLD || abs(_data.pos_z) > FAR_THRESHOLD)
                 _data.status = FarFromOrigin;
             else if (!inT)
                 _data.status = OutOfTunnel;
 
-            linebuf_len = 0; // reset
+            _linebuf_len = 0; // reset
         }
         else
         {
-            linebuf[linebuf_len++] = c;
+            _linebuf[_linebuf_len++] = c;
 
-            if (linebuf_len == sizeof(linebuf)) {linebuf_len = 0;}
+            if (_linebuf_len == sizeof(_linebuf)) {_linebuf_len = 0;}
         }
     }
     gcs().send_text(MAV_SEVERITY_INFO, "What's up %d\n", _data.pos_y);
