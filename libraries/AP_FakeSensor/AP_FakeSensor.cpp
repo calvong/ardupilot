@@ -9,6 +9,11 @@ AP_FakeSensor::AP_FakeSensor()
     _data.status   = NotConnected;
 }
 
+void AP_FakeSensor::get_AHRS(AP_AHRS_View* ahrs)
+{
+    _ahrs = ahrs;
+}
+
 void AP_FakeSensor::init()
 {
     uart = hal.uartC;  // using telem1 port
@@ -16,9 +21,7 @@ void AP_FakeSensor::init()
 
     uart->begin(ODROID_BAUDRATE);
 
-    //hal.console->printf("Init fake sensor ...\n");
     gcs().send_text(MAV_SEVERITY_INFO, "Initialising fake sensor communication with Odroid...\n");
-    //TODO: need to do init handshake with odroid
 }
 
 void AP_FakeSensor::update()
@@ -30,6 +33,8 @@ void AP_FakeSensor::update()
 
     char d[4];      // temp buffer for 4 digits
 
+
+// position update
     while (nbytes-- > 0)
     {
         char c = uart->read();
@@ -76,12 +81,22 @@ void AP_FakeSensor::update()
             if (_linebuf_len == sizeof(_linebuf)) {_linebuf_len = 0;}
         }
     }
-    gcs().send_text(MAV_SEVERITY_INFO, "What's up %d\n", _data.pos_y);
+
+// attitude update
+    _data.roll = _ahrs->roll;
+    _data.pitch = _ahrs->pitch;
+    _data.yaw = _ahrs->yaw;
+
+// assign timestamp to data
+    _data.ts = AP_HAL::millis();
+
+    gcs().send_text(MAV_SEVERITY_INFO, "roll: %f  %f %ld\n", _ahrs->roll*180/M_PI, _data.pitch*180/M_PI, _data.ts);
+
     // signal to get another reading
     uart->set_blocking_writes(false);
     uart->write("abcd2345423");
     uart->set_blocking_writes(true);
-    //gcs().send_text(MAV_SEVERITY_INFO, "Sent g...\n");
+
 }
 
 FakeSensor_data AP_FakeSensor::get_data()

@@ -5,7 +5,7 @@
 #include <AP_Math/AP_Math.h>
 #include <ctype.h>
 #include <GCS_MAVLink/GCS.h>
-
+#include <AP_AHRS/AP_AHRS_View.h>
 
 #define ODROID_BAUDRATE 921600
 
@@ -38,9 +38,18 @@ struct FakeSensor_data
 */
     int16_t pos_y;
     int16_t pos_z;
+    int16_t alt;
+
+    float roll;
+    float pitch;
+    float yaw;
+
+    uint32_t ts;    // in ms
 
     enum FakeSensor_status status;
 };
+
+
 
 class AP_FakeSensor
 {
@@ -49,6 +58,7 @@ public:
 
     void init();
     void update();
+    void get_AHRS(AP_AHRS_View* ahrs);
     FakeSensor_data get_data();
 
 private:
@@ -56,4 +66,6 @@ private:
     FakeSensor_data _data;
     char _linebuf[DATA_BUF_SIZE];
     uint8_t _linebuf_len = 0;
+
+    AP_AHRS_View*    _ahrs;
 };
