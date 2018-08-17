@@ -6,6 +6,9 @@
 #include <ctype.h>
 #include <GCS_MAVLink/GCS.h>
 #include <AP_AHRS/AP_AHRS_View.h>
+#include <stdio.h>
+#include <cstdio>
+#include <vector>
 
 #define ODROID_BAUDRATE 921600
 
@@ -61,11 +64,18 @@ public:
     void get_AHRS(AP_AHRS_View* ahrs);
     FakeSensor_data get_data();
 
+
+    vector<unsigned char> msg_encoder();
+    void msg_sender(vector<unsigned char>  msg);
+
 private:
-    AP_HAL::UARTDriver *uart = nullptr;
+    AP_HAL::UARTDriver *_uart = nullptr;
     FakeSensor_data _data;
     char _linebuf[DATA_BUF_SIZE];
     uint8_t _linebuf_len = 0;
 
     AP_AHRS_View*    _ahrs;
+
+    // messenger
+    vector<unsigned char> _int2byte(vector<unsigned char> in, int value);
 };
