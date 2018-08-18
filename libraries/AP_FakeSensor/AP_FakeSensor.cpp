@@ -31,8 +31,7 @@ void AP_FakeSensor::update()
 
     int16_t nbytes = _uart->available();
 
-    char d[4];      // temp buffer for 4 digits
-
+    char d[6];      // temp buffer for 6 digits
 
 // position update
     while (nbytes-- > 0)
@@ -43,34 +42,31 @@ void AP_FakeSensor::update()
         if (c == '#')   // end bit: start processing data
         {
             // pos y
-            for (size_t i = 0; i < 4; i++)
+            for (size_t i = 0; i < 6; i++)
             {
-                d[i] = _linebuf[i+1];
+                d[i] = _linebuf[i+2];
             }
             _data.pos_y = atoi(d);
 
-            if (_linebuf[5] == '-')  _data.pos_y *= -1;
-
             // pos z
-            for (size_t i = 0; i < 4; i++)
+            for (size_t i = 0; i < 6; i++)
             {
-                d[i] = _linebuf[i+6];
+                d[i] = _linebuf[i+8];
             }
             _data.pos_z = atoi(d);
 
-            if (_linebuf[10] == '-')  _data.pos_z *= -1;
+            // pos z
+            for (size_t i = 0; i < 6; i++)
+            {
+                d[i] = _linebuf[i+14];
+            }
+            _data.alt = atoi(d);
 
             // assign status
-            int inT = (int) _linebuf[11] - 48;   // in Tunnel?
-
-            if (inT && _linebuf[0] == '$')
+            if (_linebuf[1] == '1')
                 _data.status = Good;
-            else if (inT && _linebuf[0] != '$')    // not a complete msg
+            else
                 _data.status = Bad;
-            else if (abs(_data.pos_y) > FAR_THRESHOLD || abs(_data.pos_z) > FAR_THRESHOLD)
-                _data.status = FarFromOrigin;
-            else if (!inT)
-                _data.status = OutOfTunnel;
 
             _linebuf_len = 0; // reset
         }
@@ -92,12 +88,9 @@ void AP_FakeSensor::update()
 
     vector<unsigned char> msg;
     msg = msg_encoder();
-
-    //gcs().send_text(MAV_SEVERITY_INFO, "msg %c, %d, %f", (char) msg[0], (int) ((msg[1]<<24|msg[2]<<16|msg[3]<<8|msg[4])*180/M_PI), _data.roll*1000);
-    // signal to get another reading
     msg_sender(msg);
 
-
+    //gcs().send_text(MAV_SEVERITY_INFO, "%d %d alt %d",_data.pos_y, _data.pos_z, _data.alt);
 }
 
 

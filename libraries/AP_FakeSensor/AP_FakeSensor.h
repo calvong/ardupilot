@@ -12,7 +12,7 @@
 
 #define ODROID_BAUDRATE 921600
 
-#define DATA_BUF_SIZE 13 // 13 char in a message
+#define DATA_BUF_SIZE 21 // 21 char in a message
 #define FAR_THRESHOLD 2000 // mm
 
 using namespace std;
@@ -32,11 +32,12 @@ struct FakeSensor_data
     message structure:
 
     $ start char
-    4 digits of y position
+    0 or 1 : is lidar healthy
     + or - : sign of pos y
-    4 digits of z position
+    5 digits of y position
     + or - : sign of pos z
-    0 or 1 in tunnel or not
+    5 digits of z position
+    + or - : sign of alt
     # end char
 */
     int16_t pos_y;
@@ -63,7 +64,6 @@ public:
     void update();
     void get_AHRS(AP_AHRS_View* ahrs);
     FakeSensor_data get_data();
-
 
     vector<unsigned char> msg_encoder();
     void msg_sender(vector<unsigned char>  msg);
