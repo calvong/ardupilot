@@ -4,9 +4,9 @@ extern const AP_HAL::HAL &hal;
 
 AP_FakeSensor::AP_FakeSensor()
 {
-    _data.pos_y    = 0;
-    _data.pos_z    = 0;
-    _data.status   = NotConnected;
+    data.pos_y    = 0;
+    data.pos_z    = 0;
+    data.status   = NotConnected;
 }
 
 void AP_FakeSensor::get_AHRS(AP_AHRS_View* ahrs)
@@ -46,27 +46,28 @@ void AP_FakeSensor::update()
             {
                 d[i] = _linebuf[i+2];
             }
-            _data.pos_y = atoi(d);
+            data.pos_y = atoi(d);
 
             // pos z
             for (size_t i = 0; i < 6; i++)
             {
                 d[i] = _linebuf[i+8];
             }
-            _data.pos_z = atoi(d);
+            data.pos_z = atoi(d);
 
             // pos z
             for (size_t i = 0; i < 6; i++)
             {
                 d[i] = _linebuf[i+14];
             }
-            _data.alt = atoi(d);
+            data.alt = atoi(d);         // mm
+            data.alt_cm = data.alt/10; // cm
 
             // assign status
             if (_linebuf[1] == '1')
-                _data.status = Good;
+                data.status = Good;
             else
-                _data.status = Bad;
+                data.status = Bad;
 
             _linebuf_len = 0; // reset
         }
@@ -79,18 +80,18 @@ void AP_FakeSensor::update()
     }
 
 // attitude update
-    _data.roll = _ahrs->roll;
-    _data.pitch = _ahrs->pitch;
-    _data.yaw = _ahrs->yaw;
+    data.roll = _ahrs->roll;
+    data.pitch = _ahrs->pitch;
+    data.yaw = _ahrs->yaw;
 
 // assign timestamp to data
-    _data.ts = AP_HAL::millis();
+    data.ts = AP_HAL::millis();
 
     vector<unsigned char> msg;
     msg = msg_encoder();
     msg_sender(msg);
 
-    //gcs().send_text(MAV_SEVERITY_INFO, "%d %d alt %d",_data.pos_y, _data.pos_z, _data.alt);
+    //gcs().send_text(MAV_SEVERITY_INFO, "%d %d alt %d",data.pos_y, data.pos_z, data.alt);
 }
 
 
@@ -107,10 +108,10 @@ vector<unsigned char> AP_FakeSensor::msg_encoder()
 
     vector<unsigned char> result;
 
-    int roll        = static_cast<int>(_data.roll*1000);
-    int pitch       = static_cast<int>(_data.pitch*1000);
-    int yaw         = static_cast<int>(_data.yaw*1000);
-    unsigned int ts = _data.ts;
+    int roll        = static_cast<int>(data.roll*1000);
+    int pitch       = static_cast<int>(data.pitch*1000);
+    int yaw         = static_cast<int>(data.yaw*1000);
+    unsigned int ts = data.ts;
 
     result.push_back('$');
     result = _int2byte(result, roll);
@@ -141,7 +142,8 @@ void AP_FakeSensor::msg_sender(vector<unsigned char> msg)
     _uart->set_blocking_writes(true);
 }
 
-FakeSensor_data AP_FakeSensor::get_data()
+bool AP_FakeSensor::data_is_ok()
 {
-    return _data;
+    if (data.status == Bad)    return false;
+    else                        return true;
 }

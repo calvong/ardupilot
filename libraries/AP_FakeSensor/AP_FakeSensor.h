@@ -38,11 +38,13 @@ struct FakeSensor_data
     + or - : sign of pos z
     5 digits of z position
     + or - : sign of alt
+    5 digits of altitude
     # end char
 */
     int16_t pos_y;
     int16_t pos_z;
-    int16_t alt;
+    int16_t alt;    // mm
+    int16_t alt_cm;
 
     float roll;
     float pitch;
@@ -58,19 +60,23 @@ struct FakeSensor_data
 class AP_FakeSensor
 {
 public:
+    FakeSensor_data data;
+
     AP_FakeSensor();
 
     void init();
     void update();
     void get_AHRS(AP_AHRS_View* ahrs);
-    FakeSensor_data get_data();
+    bool data_is_ok();
 
     vector<unsigned char> msg_encoder();
     void msg_sender(vector<unsigned char>  msg);
 
+    // get controller info
+    
+
 private:
     AP_HAL::UARTDriver *_uart = nullptr;
-    FakeSensor_data _data;
     char _linebuf[DATA_BUF_SIZE];
     uint8_t _linebuf_len = 0;
 
