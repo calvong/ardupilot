@@ -40,6 +40,7 @@ line 139 enum mode state
 
 mode.h
 line 276
+line 190 define lidar climb rate
 
 mode_?.cpp needs to be created
 
@@ -48,3 +49,5 @@ line 944
 
 mode.cpp:
 line 57
+line 564 - pass through lidar climb rate function 
+

@@ -230,7 +230,8 @@ float Copter::get_surface_tracking_climb_rate(int16_t target_rate, float current
 //      returns climb rate (in cm/s) which should be passed to the position controller
 float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_rate, float current_alt_target, float dt)
 {
-    if (!pos_sensor.data_is_ok) {
+
+    if (!pos_sensor.data_is_ok()) {
         // if rangefinder is not ok, do not use surface tracking
         return target_rate;
     }

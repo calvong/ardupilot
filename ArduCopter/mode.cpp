@@ -52,7 +52,7 @@ Copter::Mode *Copter::mode_from_mode_num(const uint8_t mode)
         case ALT_HOLD:
             ret = &mode_althold;
             break;
-            
+
         case LIALT_HOLD:
             ret = &mode_lialthold;
             break;
@@ -559,6 +559,11 @@ void Copter::Mode::land_run_horizontal_control()
 float Copter::Mode::get_surface_tracking_climb_rate(int16_t target_rate, float current_alt_target, float dt)
 {
     return copter.get_surface_tracking_climb_rate(target_rate, current_alt_target, dt);
+}
+
+float Copter::Mode::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_rate, float current_alt_target, float dt)
+{
+    return copter.get_surface_tracking_climb_rate_with_Hokuyo_lidar(target_rate, current_alt_target, dt);
 }
 
 float Copter::Mode::get_pilot_desired_yaw_rate(int16_t stick_angle)

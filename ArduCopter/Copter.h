@@ -250,7 +250,7 @@ private:
     AP_InertialSensor ins;
 
     AP_FakeSensor pos_sensor;
-    FakeSensor_data pos_data;
+
 
     AC_TunnelPID tunnelPID;
 
