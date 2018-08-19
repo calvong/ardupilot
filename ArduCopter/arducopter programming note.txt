@@ -1,5 +1,8 @@
 Note for Arducopter firmware modification
 
+//===========================================================
+// fake sensor setup
+//==========================================================
 sensor driver:
 Need to mod wscript and make.inc
 
@@ -25,3 +28,23 @@ add to schedule
 * to stop GCS to send mavlink msg to TELEM1
 line 66, 101 -> GCS_Common.cpp
 line 47 -> GCS_serial_control.cpp
+
+
+
+//==========================================================
+// flight mode setup
+//=========================================================
+defines.h:
+line 56
+line 139 enum mode state
+
+mode.h
+line 276
+
+mode_?.cpp needs to be created
+
+copter.h :
+line 944
+
+mode.cpp:
+line 57

@@ -52,11 +52,15 @@ Copter::Mode *Copter::mode_from_mode_num(const uint8_t mode)
         case ALT_HOLD:
             ret = &mode_althold;
             break;
+            
+        case LIALT_HOLD:
+            ret = &mode_lialthold;
+            break;
 
         case TUNNEL:
             ret = &mode_tunnel;
             break;
-            
+
 #if MODE_AUTO_ENABLED == ENABLED
         case AUTO:
             ret = &mode_auto;
