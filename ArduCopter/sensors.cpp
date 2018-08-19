@@ -10,7 +10,6 @@ void Copter::read_FakeSensor(void)
 {
     pos_sensor.update();
 
-    pos_data = pos_sensor.get_data();
 }
 
 // return barometric altitude in centimeters
