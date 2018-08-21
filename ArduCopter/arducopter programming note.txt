@@ -41,6 +41,7 @@ line 139 enum mode state
 mode.h
 line 276
 line 190 define lidar climb rate
+line 120 passing fake sensor object to mode
 
 mode_?.cpp needs to be created
 

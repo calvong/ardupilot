@@ -26,21 +26,21 @@ enum FakeSensor_status
     NotConnected
 };
 
-struct FakeSensor_data
+struct FakeSensor_data_t
 {
-/*
-    message structure:
+    /*
+        message structure:
 
-    $ start char
-    0 or 1 : is lidar healthy
-    + or - : sign of pos y
-    5 digits of y position
-    + or - : sign of pos z
-    5 digits of z position
-    + or - : sign of alt
-    5 digits of altitude
-    # end char
-*/
+        $ start char
+        0 or 1 : is lidar healthy
+        + or - : sign of pos y
+        5 digits of y position
+        + or - : sign of pos z
+        5 digits of z position
+        + or - : sign of alt
+        5 digits of altitude
+        # end char
+    */
     int16_t pos_y;
     int16_t pos_z;
     int16_t alt;    // mm
@@ -53,6 +53,10 @@ struct FakeSensor_data
     uint32_t ts;    // in ms
 
     enum FakeSensor_status status;
+
+    // TEMP: temp debug variables
+    int16_t target_climb_rate;
+    float alt_target;
 };
 
 
@@ -60,7 +64,7 @@ struct FakeSensor_data
 class AP_FakeSensor
 {
 public:
-    FakeSensor_data data;
+    FakeSensor_data_t data;
 
     AP_FakeSensor();
 
@@ -73,7 +77,7 @@ public:
     void msg_sender(vector<unsigned char>  msg);
 
     // get controller info
-    
+
 
 private:
     AP_HAL::UARTDriver *_uart = nullptr;

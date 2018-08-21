@@ -117,6 +117,7 @@ protected:
     void land_run_vertical_control(bool pause_descent = false);
 
     // convenience references to avoid code churn in conversion:
+    AP_FakeSensor &pos_sensor;
     Parameters &g;
     ParametersG2 &g2;
     AC_WPNav *&wp_nav;
