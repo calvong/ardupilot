@@ -125,6 +125,9 @@ void Copter::ModeLiAltHold::run()
 
         // adjust climb rate using rangefinder
         target_climb_rate = get_surface_tracking_climb_rate_with_Hokuyo_lidar(target_climb_rate, pos_control->get_alt_target(), G_Dt);
+        // TEMP: temp retreiving control info
+        pos_sensor.data.target_climb_rate = target_climb_rate;
+        pos_sensor.data.alt_target = pos_control->get_alt_target();
 
         // get avoidance adjusted climb rate
         target_climb_rate = get_avoidance_adjusted_climbrate(target_climb_rate);

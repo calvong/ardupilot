@@ -9,6 +9,7 @@
   constructor for Mode object
  */
 Copter::Mode::Mode(void) :
+    pos_sensor(copter.pos_sensor),
     g(copter.g),
     g2(copter.g2),
     wp_nav(copter.wp_nav),

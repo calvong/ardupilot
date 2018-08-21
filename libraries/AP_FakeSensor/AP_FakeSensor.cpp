@@ -33,7 +33,7 @@ void AP_FakeSensor::update()
 
     char d[6];      // temp buffer for 6 digits
 
-// position update
+    // position update
     while (nbytes-- > 0)
     {
         char c = _uart->read();
@@ -79,12 +79,12 @@ void AP_FakeSensor::update()
         }
     }
 
-// attitude update
+    // attitude update
     data.roll = _ahrs->roll;
     data.pitch = _ahrs->pitch;
     data.yaw = _ahrs->yaw;
 
-// assign timestamp to data
+    // assign timestamp to data
     data.ts = AP_HAL::millis();
 
     vector<unsigned char> msg;
@@ -97,14 +97,14 @@ void AP_FakeSensor::update()
 
 vector<unsigned char> AP_FakeSensor::msg_encoder()
 {
-//=================================
-//********  MSG FORMAT  ***********
-//=================================
-//  variables:
-//  roll, pitch, yaw are x1000 and sent as int
-//
-//  message:
-//  $roll pitch yaw ts#
+    //=================================
+    //********  MSG FORMAT  ***********
+    //=================================
+    //  variables:
+    //  roll, pitch, yaw are x1000 and sent as int
+    //
+    //  message:
+    //  $roll pitch yaw ts#
 
     vector<unsigned char> result;
 
@@ -113,11 +113,16 @@ vector<unsigned char> AP_FakeSensor::msg_encoder()
     int yaw         = static_cast<int>(data.yaw*1000);
     unsigned int ts = data.ts;
 
+    // TEMP: temp debug variables
+    int alt_target = static_cast<int>(data.alt_target*1000);
+
     result.push_back('$');
     result = _int2byte(result, roll);
     result = _int2byte(result, pitch);
     result = _int2byte(result, yaw);
     result = _int2byte(result, ts);
+    result = _int2byte(result, data.target_climb_rate);
+    result = _int2byte(result, alt_target);
 
     return result;
 }

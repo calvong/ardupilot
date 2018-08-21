@@ -248,7 +248,6 @@ private:
 
     AP_FakeSensor pos_sensor;
 
-
     AC_TunnelPID tunnelPID;
 
     RangeFinder rangefinder{serial_manager, ROTATION_PITCH_270};
