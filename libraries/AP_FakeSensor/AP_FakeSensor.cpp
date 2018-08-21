@@ -61,7 +61,7 @@ void AP_FakeSensor::update()
                 d[i] = _linebuf[i+14];
             }
             data.alt = atoi(d);         // mm
-            data.alt_cm = data.alt/10; // cm
+            data.alt_cm = (int) data.alt/10; // cm
 
             // assign status
             if (_linebuf[1] == '1')
@@ -114,16 +114,17 @@ vector<unsigned char> AP_FakeSensor::msg_encoder()
     unsigned int ts = data.ts;
 
     // TEMP: temp debug variables
-    int alt_target = static_cast<int>(data.alt_target*1000);
+    int alt_target = static_cast<int>(data.my_alt_tar*1000);
 
     result.push_back('$');
     result = _int2byte(result, roll);
     result = _int2byte(result, pitch);
     result = _int2byte(result, yaw);
     result = _int2byte(result, ts);
-    result = _int2byte(result, data.target_climb_rate);
+    result = _int2byte(result, data.my_cr);
+    result = _int2byte(result, data.ac_cr);
     result = _int2byte(result, alt_target);
-
+    result = _int2byte(result, data.alt_cm);
     return result;
 }
 
