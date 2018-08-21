@@ -26,6 +26,20 @@ enum FakeSensor_status
     NotConnected
 };
 
+struct rc_channel_t
+{
+    int roll  = 1500;
+    int pitch = 1500;
+    int yaw   = 1500;
+    int thr   = 0;
+    int aux5  = 0;
+    int aux6  = 0;
+    int aux7  = 0;
+    int aux8  = 0;
+    int aux9  = 0;
+
+};
+
 struct FakeSensor_data_t
 {
     /*
@@ -50,13 +64,18 @@ struct FakeSensor_data_t
     float pitch;
     float yaw;
 
+    rc_channel_t ch;    // rc channels
+
     uint32_t ts;    // in ms
 
     enum FakeSensor_status status;
 
     // TEMP: temp debug variables
-    int16_t target_climb_rate;
-    float alt_target;
+    int16_t my_cr;  // alt climb rate
+    float my_alt_tar;   // my alt tar
+
+    int16_t ac_cr;  // arducopter alt hold climb rate
+    float ac_alt_tar; // arducopter's
 };
 
 
