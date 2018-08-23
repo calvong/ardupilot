@@ -368,6 +368,16 @@ public:
 
         k_param_pid_tunnel_pos_y_imax,
 
+        k_param_BS_z_k1,
+        k_param_BS_z_k2,
+        k_param_BS_z_k3,
+        k_param_BS_y_k1,
+        k_param_BS_y_k2,
+        k_param_BS_y_k3,
+
+        k_param_BS_imax_z,
+        k_param_BS_imax_y,
+
         // the k_param_* space is 9-bits in size
         // 511: reserved
     };
@@ -381,6 +391,19 @@ public:
     AP_Float pid_tunnel_pos_y_d;
 
     AP_Float pid_tunnel_pos_y_imax;
+
+    // Tunnel Backstepping controller parameter
+    //
+    AP_Float BS_z_k1;
+    AP_Float BS_z_k2;
+    AP_Float BS_z_k3;
+    AP_Float BS_y_k1;
+    AP_Float BS_y_k2;
+    AP_Float BS_y_k3;
+
+    AP_Float BS_imax_z;
+    AP_Float BS_imax_y;
+
     // Telemetry control
     //
     AP_Int16        sysid_this_mav;

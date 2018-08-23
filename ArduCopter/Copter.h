@@ -491,6 +491,7 @@ private:
 #endif
     AC_AttitudeControl_t *attitude_control;
     AC_PosControl *pos_control;
+    AC_Backstepping *backstepping;
     AC_WPNav *wp_nav;
     AC_Loiter *loiter_nav;
 #if MODE_CIRCLE_ENABLED == ENABLED

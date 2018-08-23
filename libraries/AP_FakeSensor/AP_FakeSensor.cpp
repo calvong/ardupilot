@@ -115,6 +115,7 @@ vector<unsigned char> AP_FakeSensor::msg_encoder()
 
     // TEMP: temp debug variables
     int alt_target = static_cast<int>(data.my_alt_tar*1000);
+    int u1 = static_cast<int>(data.u1);
 
     result.push_back('$');
     result = _int2byte(result, roll);
@@ -125,6 +126,7 @@ vector<unsigned char> AP_FakeSensor::msg_encoder()
     result = _int2byte(result, data.ac_cr);
     result = _int2byte(result, alt_target);
     result = _int2byte(result, data.alt_cm);
+    result = _int2byte(result, u1);
     return result;
 }
 
