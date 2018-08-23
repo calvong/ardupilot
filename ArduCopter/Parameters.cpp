@@ -48,35 +48,35 @@ const AP_Param::Info Copter::var_info[] = {
 
     // @Param:Backstepping_y_k1
     // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_y_k1, "Backstepping_y_k1",   1),
+    GSCALAR(BS_y_k1, "BS_y_k1",   1),
 
     // @Param:Backstepping_y_k2
     // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_y_k2, "Backstepping_y_k2",   1),
+    GSCALAR(BS_y_k2, "BS_y_k2",   1),
 
     // @Param:Backstepping_y_k3
     // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_y_k3, "Backstepping_y_k3",   1),
+    GSCALAR(BS_y_k3, "BS_y_k3",   1),
 
     // @Param:Backstepping_z_k1
     // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_z_k1, "Backstepping_z_k1",   1),
+    GSCALAR(BS_z_k1, "BS_z_k1",   1),
 
     // @Param:Backstepping_z_k2
     // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_z_k2, "Backstepping_z_k2",   1),
+    GSCALAR(BS_z_k2, "BS_z_k2",   1),
 
     // @Param:Backstepping_z_k3
     // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_z_k3, "Backstepping_z_k3",   1),
+    GSCALAR(BS_z_k3, "BS_z_k3",   1),
 
     // @Param:Backstepping_imax_y
     // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_imax_y, "Backstepping_imax_y",   10),
+    GSCALAR(BS_imax_y, "BS_imax_y",   10),
 
     // @Param:Backstepping_imax_z
     // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_imax_z, "Backstepping_imax_z",   10),
+    GSCALAR(BS_imax_z, "BS_imax_z",   10),
 
     // @Param: SYSID_SW_MREV
     // @DisplayName: Eeprom format version number
