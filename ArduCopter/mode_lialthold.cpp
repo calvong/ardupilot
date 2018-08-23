@@ -125,19 +125,15 @@ void Copter::ModeLiAltHold::run()
 
         // adjust climb rate using rangefinder
         target_climb_rate = get_surface_tracking_climb_rate_with_Hokuyo_lidar(target_climb_rate, pos_control->get_alt_target(), G_Dt);
-        float ac_cr = get_surface_tracking_climb_rate(target_climb_rate, pos_control->get_alt_target(), G_Dt);
 
-        // TEMP: temp retreiving control info
-        pos_sensor.data.my_cr = (int) target_climb_rate;
-        pos_sensor.data.my_alt_tar = pos_control->get_alt_target();
-        pos_sensor.data.ac_cr = (int) ac_cr;
-
-        // TEMP: trying to retreive backstepping output
+        // TEMP for testing backstepping
+        backstepping->get_gains(g.BS_y_k1,g.BS_y_k2,g.BS_y_k3,g.BS_z_k1,g.BS_z_k2,g.BS_z_k3);
         backstepping->get_imax(g.BS_imax_y, g.BS_imax_z);
-        backstepping->get_gains(g.BS_y_k1, g.BS_y_k2, g.BS_y_k3, g.BS_z_k1, g.BS_z_k2, g.BS_z_k3);
-        backstepping->get_target_pos(0, pos_control->get_alt_target()*10);
+        backstepping->get_target_pos(0, pos_control->get_alt_target()*0.01f);   // in m
+        backstepping->pos_update();
+
         backstepping->update_alt_controller();
-        pos_sensor.data.u1 = backstepping->get_u1();
+        pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());
 
         // get avoidance adjusted climb rate
         target_climb_rate = get_avoidance_adjusted_climbrate(target_climb_rate);

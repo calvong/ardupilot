@@ -33,17 +33,19 @@ void AC_Backstepping::update_alt_controller()
     float  dez = (ez - _pos.prev_ez) / _dt;
     _pos.iez += ez * _dt;
 
+    perr.ez = ez;
+
     // update d term
     _pos.prev_ez = ez;
-    dez = 0;   // TEMP
+    float dterm_z = dez*(_gains.k1_z + _gains.k3_z);
+    perr.dterm_z = dterm_z;
 
     // restrict integral
-    float integral = _limit_integral(_gains.k2_z*_gains.k3_z*_pos.iez, 'z');
-    integral = 0; // TEMP
-
+    float iterm_z = _limit_integral(_gains.k2_z*_gains.k3_z, ez, 'z');
+    perr.iterm_z = iterm_z;
 
     // compute u1
-    _u1 = (G + dez*(_gains.k1_z + _gains.k3_z) + ez*(_gains.k2_z + _gains.k1_z*_gains.k3_z) + integral) / (cphi*cthe);
+    _u1 = (G + dterm_z + ez*(_gains.k2_z + _gains.k1_z*_gains.k3_z) + iterm_z) / (cphi*cthe);
 
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
@@ -63,7 +65,7 @@ void AC_Backstepping::write_log()
 void AC_Backstepping::pos_update()
 {
     _pos.y = _fs.data.pos_y;
-    _pos.z = _fs.data.pos_z;
+    _pos.z = _fs.data.alt;    // TEMP: change back to pos z later
 }
 
 
@@ -99,21 +101,41 @@ void AC_Backstepping::reset_integral_z()
     _pos.iez = 0;
 }
 
-float AC_Backstepping::_limit_integral(float i_term, char yz)
+float AC_Backstepping::_limit_integral(float gain, float current_err, char yz)
 {
     float out = 0;
 
     switch(yz)
     {
-        case 'y':
-            if (i_term > _imax_y)       out = _imax_y;
-            else if (i_term < -_imax_y) out = -_imax_y;
-            break;
+        case 'y': {
+            float i_term = gain * _pos.iey;
 
-        case 'z':
-            if (i_term > _imax_z)       out =  _imax_z;
-            else if (i_term < -_imax_z) out =  -_imax_z;
-            break;
+            if (i_term > _imax_y)
+            {
+                out = _imax_y;
+                _pos.iey -= current_err*_dt;
+            }
+            else if (i_term < -_imax_y)
+            {
+                out = -_imax_y;
+                _pos.iey -= current_err*_dt;
+            }
+        }break;
+
+        case 'z': {
+            float i_term = gain * _pos.iey;
+
+            if (i_term > _imax_z)
+            {
+                out =  _imax_z;
+                _pos.iez -= current_err*_dt;
+            }
+            else if (i_term < -_imax_z)
+            {
+                out =  -_imax_z;
+                _pos.iez -= current_err*_dt;
+            }
+        }break;
     }
 
     return out;

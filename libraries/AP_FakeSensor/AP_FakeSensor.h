@@ -3,12 +3,14 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Param/AP_Param.h>
 #include <AP_Math/AP_Math.h>
-#include <ctype.h>
 #include <GCS_MAVLink/GCS.h>
+#include <RC_Channel/RC_Channel.h>
+#include <AP_Motors/AP_Motors.h>
 #include <AP_AHRS/AP_AHRS_View.h>
 #include <stdio.h>
 #include <cstdio>
 #include <vector>
+#include <ctype.h>
 
 #define ODROID_BAUDRATE 921600
 
@@ -16,6 +18,12 @@
 #define FAR_THRESHOLD 2000 // mm
 
 using namespace std;
+
+union float_num
+{
+    unsigned char buf[4];
+    float num;
+};
 
 enum FakeSensor_status
 {
@@ -40,6 +48,14 @@ struct rc_channel_t
 
 };
 
+// control output
+struct pos_error_t
+{
+    float ez;
+    float dterm_z;
+    float iterm_z;
+};
+
 struct FakeSensor_data_t
 {
     /*
@@ -60,6 +76,8 @@ struct FakeSensor_data_t
     float alt;      // m
     int16_t alt_cm; // cm
 
+
+    // Pixhawk 2 info
     float roll;
     float pitch;
     float yaw;
@@ -71,14 +89,9 @@ struct FakeSensor_data_t
     enum FakeSensor_status status;
 
     // controller output
-    float u1;   // thrust output
-
-    // TEMP: temp debug variables
-    int16_t my_cr;  // alt climb rate
-    float my_alt_tar;   // my alt tar
-
-    int16_t ac_cr;  // arducopter alt hold climb rate
-    float ac_alt_tar; // arducopter's
+    pos_error_t perr;
+    float mthrust_out[3];   // motor thrust output
+    float u1;               // Backstepping thrust output
 };
 
 
@@ -93,21 +106,29 @@ public:
     void init();
     void update();
     void get_AHRS(AP_AHRS_View* ahrs);
+    void get_motors(AP_MotorsMulticopter* motors);
     bool data_is_ok();
 
-    vector<unsigned char> msg_encoder();
-    void msg_sender(vector<unsigned char>  msg);
-
     // get controller info
-
+    void read_controller(pos_error_t perr, float u1);
 
 private:
     AP_HAL::UARTDriver *_uart = nullptr;
     char _linebuf[DATA_BUF_SIZE];
     uint8_t _linebuf_len = 0;
 
-    AP_AHRS_View*    _ahrs;
+    AP_MotorsMulticopter*   _motors;
+    AP_AHRS_View*           _ahrs;
 
     // messenger
+    void _get_pos();
+    void _read_radio();
+    void _read_AHRS();
+    vector<unsigned char> _msg_encoder();
+    void _msg_sender(vector<unsigned char>  msg);
+
+    // helper
+    float _limit_thr(float thr);    // restrict throttle from 0-1 (mainly noise issue?)
     vector<unsigned char> _int2byte(vector<unsigned char> in, int value);
+    vector<unsigned char> _float2byte(vector<unsigned char> in, float value);
 };
