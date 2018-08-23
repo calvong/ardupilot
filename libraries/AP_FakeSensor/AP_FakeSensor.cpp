@@ -46,22 +46,22 @@ void AP_FakeSensor::update()
             {
                 d[i] = _linebuf[i+2];
             }
-            data.pos_y = atoi(d);
+            data.pos_y = (float) atoi(d)/1000.0f;   // m
 
             // pos z
             for (size_t i = 0; i < 6; i++)
             {
                 d[i] = _linebuf[i+8];
             }
-            data.pos_z = atoi(d);
+            data.pos_z = (float) atoi(d)/1000.0f;   // m
 
-            // pos z
+            // alt
             for (size_t i = 0; i < 6; i++)
             {
                 d[i] = _linebuf[i+14];
             }
-            data.alt = atoi(d);         // mm
-            data.alt_cm = (int) data.alt/10; // cm
+            data.alt = (float) atoi(d)/1000.0f;  // m
+            data.alt_cm = (int16_t) data.alt/10; // cm
 
             // assign status
             if (_linebuf[1] == '1')

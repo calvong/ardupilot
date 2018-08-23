@@ -29,7 +29,7 @@ void AC_Backstepping::update_alt_controller()
     float cphi = _ahrs.cos_roll();  // cos(phi)
     float cthe = _ahrs.cos_pitch(); // cos(theta)
 
-    int16_t ez = _pos_target_z - _pos.z;
+    float ez = _pos_target_z - _pos.z;
     float  dez = (ez - _pos.prev_ez) / _dt;
     _pos.iez += ez * _dt;
 
@@ -44,7 +44,7 @@ void AC_Backstepping::update_alt_controller()
 
     // compute u1
     _u1 = (G + dez*(_gains.k1_z + _gains.k3_z) + ez*(_gains.k2_z + _gains.k1_z*_gains.k3_z) + integral) / (cphi*cthe);
-    
+
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
     //_attitude_control.set_throttle_out(_thr_out, false, BACKSTEPPING_THROTTLE_CUTOFF_FREQ);
@@ -67,7 +67,7 @@ void AC_Backstepping::pos_update()
 }
 
 
-void AC_Backstepping::get_target_pos(int16_t yd, int16_t zd)
+void AC_Backstepping::get_target_pos(float yd, float zd)
 {
     _pos_target_y = yd;
     _pos_target_z = zd;
