@@ -36,7 +36,7 @@ public:
     void pos_update();
     void get_imax(float imax_y, float imax_z);
     void get_gains(float yk1, float yk2, float yk3, float zk1, float zk2, float zk3);
-    void get_target_pos(int16_t yd, int16_t zd);
+    void get_target_pos(float yd, float zd);
     float get_u1();
 
     void update_alt_controller();
@@ -66,8 +66,8 @@ private:
 
     struct position_t
     {
-        int16_t y;
-        int16_t z;
+        float y;    // m
+        float z;    // m
 
         float vel_y = 0;
         float vel_z = 0;
@@ -80,8 +80,8 @@ private:
     }_pos;
 
     float _dt;
-    int16_t _pos_target_z;
-    int16_t _pos_target_y;
+    float _pos_target_z;
+    float _pos_target_y;
 
     float _imax_z;   // max integral term for pos z
     float _imax_y;   // max integral term for pos y

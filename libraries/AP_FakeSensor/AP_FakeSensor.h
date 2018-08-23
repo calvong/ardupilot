@@ -55,10 +55,10 @@ struct FakeSensor_data_t
         5 digits of altitude
         # end char
     */
-    int16_t pos_y;
-    int16_t pos_z;
-    int16_t alt;    // mm
-    int16_t alt_cm;
+    float pos_y;    // m
+    float pos_z;    // m
+    float alt;      // m
+    int16_t alt_cm; // cm
 
     float roll;
     float pitch;
