@@ -89,15 +89,18 @@ public:
     // get minimum or maximum pwm value that can be output to motors
     int16_t             get_pwm_output_min() const;
     int16_t             get_pwm_output_max() const;
-    
+
     // set thrust compensation callback
     FUNCTOR_TYPEDEF(thrust_compensation_fn_t, void, float *, uint8_t);
     void                set_thrust_compensation_callback(thrust_compensation_fn_t callback) {
         _thrust_compensation_callback = callback;
     }
-    
+
     // var_info for holding Parameter information
     static const struct AP_Param::GroupInfo        var_info[];
+
+    // extra data logging for custom controller
+    void                get_motor_thrust_output(float* output);
 
 protected:
 
@@ -133,7 +136,7 @@ protected:
 
     // output booster throttle, if any
     virtual void        output_boost_throttle(void);
-    
+
     // save parameters as part of disarming
     void save_params_on_disarm();
 
@@ -169,7 +172,7 @@ protected:
 
     // scaling for booster motor throttle
     AP_Float            _boost_scale;
-    
+
     // motor output variables
     bool                motor_enabled[AP_MOTORS_MAX_NUM_MOTORS];    // true if motor is enabled
     int16_t             _throttle_radio_min;        // minimum PWM from RC input's throttle channel (i.e. minimum PWM input from receiver, RC3_MIN)

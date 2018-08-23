@@ -159,7 +159,7 @@ const AP_Param::GroupInfo AP_MotorsMulticopter::var_info[] = {
 
     // @Param: SPOOL_TIME
     // @DisplayName: Spool up time
-    // @Description: Time in seconds to spool up the motors from zero to min throttle. 
+    // @Description: Time in seconds to spool up the motors from zero to min throttle.
     // @Range: 0 2
     // @Units: s
     // @Increment: 0.1
@@ -175,7 +175,7 @@ const AP_Param::GroupInfo AP_MotorsMulticopter::var_info[] = {
     AP_GROUPINFO("BOOST_SCALE",  37, AP_MotorsMulticopter,  _boost_scale, 0),
 
     // 38 RESERVED for BAT_POW_MAX
-    
+
     // @Param: BAT_IDX
     // @DisplayName: Battery compensation index
     // @Description: Which battery monitor should be used for doing compensation
@@ -221,7 +221,7 @@ void AP_MotorsMulticopter::output()
 
     // apply any thrust compensation for the frame
     thrust_compensation();
-    
+
     // convert rpy_thrust values to pwm
     output_to_motors();
 
@@ -234,10 +234,10 @@ void AP_MotorsMulticopter::output_boost_throttle(void)
 {
     if (_boost_scale > 0) {
         float throttle = constrain_float(get_throttle() * _boost_scale, 0, 1);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_boost_throttle, throttle*1000);        
+        SRV_Channels::set_output_scaled(SRV_Channel::k_boost_throttle, throttle*1000);
     }
 }
-    
+
 
 // sends minimum values out to the motors
 void AP_MotorsMulticopter::output_min()
@@ -617,4 +617,17 @@ void AP_MotorsMulticopter::save_params_on_disarm()
     if (_throttle_hover_learn == HOVER_LEARN_AND_SAVE) {
         _throttle_hover.save();
     }
+}
+
+/*
+    get thrust output to the motors
+    -> _thrust_rpyt_out
+    -> _throttle_in
+    -> _throttle_avg_max
+*/
+void AP_MotorsMulticopter::get_motor_thrust_output(float* output)
+{
+    output[0] = _throttle_in;
+    output[1] = _throttle_avg_max;
+    output[2] = _throttle_hover;
 }

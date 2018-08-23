@@ -10,6 +10,7 @@
 #include <AC_PID/AC_PID.h>
 #include <AC_AttitudeControl/AC_AttitudeControl.h>
 #include "AP_FakeSensor/AP_FakeSensor.h"
+#include <RC_Channel/RC_Channel.h>
 
 #define G -9.81 // gravity
 #define BACKSTEPPING_THROTTLE_CUTOFF_FREQ         2.0f    // low-pass filter on accel error (unit: hz)
@@ -26,6 +27,8 @@ public:
         bool reset_integral;
 
     }flags;
+
+    pos_error_t perr;
 
     // functions
     AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav& inav,
@@ -90,5 +93,5 @@ private:
     float _u1;               // thrust: raw controller output from altitude controller
     float _target_roll;     // desired roll output from lateral controller
 
-    float _limit_integral(float i_term, char yz);
+    float _limit_integral(float gain, float current_err, char yz);
 };
