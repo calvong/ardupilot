@@ -70,6 +70,9 @@ struct FakeSensor_data_t
 
     enum FakeSensor_status status;
 
+    // controller output
+    float u1;   // thrust output
+
     // TEMP: temp debug variables
     int16_t my_cr;  // alt climb rate
     float my_alt_tar;   // my alt tar

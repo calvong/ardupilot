@@ -589,6 +589,12 @@ void Copter::allocate_motors(void)
     if (pos_control == nullptr) {
         AP_HAL::panic("Unable to allocate PosControl");
     }
+
+    backstepping = new AC_Backstepping(*ahrs_view, inertial_nav, *motors, *attitude_control, pos_sensor);
+    if (backstepping == nullptr) {
+        AP_HAL::panic("Unable to allocate Backstepping");
+    }
+
     AP_Param::load_object_from_eeprom(pos_control, pos_control->var_info);
 
     pos_sensor.get_AHRS(ahrs_view);

@@ -52,3 +52,26 @@ mode.cpp:
 line 57
 line 564 - pass through lidar climb rate function 
 
+
+//===========================================================
+// controller setup - backstepping
+//===========================================================
+Copter.h
+line 491 - create controller pointer
+
+mode.h
+line 126 - reference of controller pointer
+
+mode.cpp
+line 12 - init backstepping
+
+system.cpp
+line 589 - allocate new memory for controller 
+
+
+//============================================================
+// parameter
+//============================================================
+link:
+http://ardupilot.org/dev/docs/code-overview-adding-a-new-parameter.html
+

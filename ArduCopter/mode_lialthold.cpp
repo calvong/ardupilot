@@ -132,6 +132,12 @@ void Copter::ModeLiAltHold::run()
         pos_sensor.data.my_alt_tar = pos_control->get_alt_target();
         pos_sensor.data.ac_cr = (int) ac_cr;
 
+        // TEMP: trying to retreive backstepping output
+        backstepping->get_imax(g.BS_imax_y, g.BS_imax_z);
+        backstepping->get_gains(g.BS_y_k1, g.BS_y_k2, g.BS_y_k3, g.BS_z_k1, g.BS_z_k2, g.BS_z_k3);
+        backstepping->get_target_pos(0, pos_control->get_alt_target()*10);
+        backstepping->update_alt_controller();
+        pos_sensor.data.u1 = backstepping->get_u1();
 
         // get avoidance adjusted climb rate
         target_climb_rate = get_avoidance_adjusted_climbrate(target_climb_rate);
