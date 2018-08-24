@@ -134,6 +134,8 @@ void Copter::ModeLiAltHold::run()
 
         backstepping->update_alt_controller();
         pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());
+        pos_sensor.data.AC_alt_target = pos_control->get_alt_target();
+        pos_sensor.data.AC_cr = target_climb_rate;
 
         // get avoidance adjusted climb rate
         target_climb_rate = get_avoidance_adjusted_climbrate(target_climb_rate);
