@@ -89,6 +89,8 @@ struct FakeSensor_data_t
     enum FakeSensor_status status;
 
     // controller output
+    float AC_alt_target;
+    float AC_cr;
     pos_error_t perr;
     float mthrust_out[3];   // motor thrust output
     float u1;               // Backstepping thrust output
