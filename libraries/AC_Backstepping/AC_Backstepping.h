@@ -12,9 +12,10 @@
 #include "AP_FakeSensor/AP_FakeSensor.h"
 #include <RC_Channel/RC_Channel.h>
 
-#define G -9.81 // gravity
-#define BACKSTEPPING_THROTTLE_CUTOFF_FREQ         2.0f    // low-pass filter on accel error (unit: hz)
-#define DEFAULT_IMAX 10
+#define G                                   -9.81 // gravity
+#define DEFAULT_IMAX                        10
+#define BACKSTEPPING_THROTTLE_CUTOFF_FREQ   2.0f    // low-pass filter on accel error (unit: hz)
+#define THRUST_SCALE_FACTOR                 0.01f
 
 //TODO: check inav vel direction +/-ve
 class AC_Backstepping
@@ -94,4 +95,5 @@ private:
     float _target_roll;     // desired roll output from lateral controller
 
     float _limit_integral(float gain, float current_err, char yz);
+    float _limit_thrust(float thr);
 };

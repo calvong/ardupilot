@@ -45,7 +45,8 @@ void AC_Backstepping::update_alt_controller()
     perr.iterm_z = iterm_z;
 
     // compute u1
-    _u1 = (G + dterm_z + ez*(_gains.k2_z + _gains.k1_z*_gains.k3_z) + iterm_z) / (cphi*cthe);
+    _u1 = (dterm_z + ez*(_gains.k2_z + _gains.k1_z*_gains.k3_z) + iterm_z) / (cphi*cthe);
+    _u1 = _limit_thrust(_u1);
 
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
@@ -99,6 +100,13 @@ void AC_Backstepping::reset_integral_y()
 void AC_Backstepping::reset_integral_z()
 {
     _pos.iez = 0;
+}
+
+float AC_Backstepping::_limit_thrust(float thr)
+{
+    if (thr > 1)        return 1.0f;
+    else if (thr < 0)   return 0;
+    else                return thr;
 }
 
 float AC_Backstepping::_limit_integral(float gain, float current_err, char yz)
