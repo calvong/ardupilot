@@ -152,6 +152,8 @@ vector<unsigned char> AP_FakeSensor::_msg_encoder()
     result = _float2byte(result, data.perr.iterm_z);
     result = _float2byte(result, data.AC_alt_target);
     result = _float2byte(result, data.AC_cr);
+    result = _float2byte(result, data.dist_err);
+    result = _float2byte(result, data.target_rangefinder_alt);
 
     return result;
 }

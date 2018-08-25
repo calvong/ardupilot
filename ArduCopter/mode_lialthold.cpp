@@ -118,17 +118,15 @@ void Copter::ModeLiAltHold::run()
         // call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 
+        float* dist_err = nullptr;
+        float* target_rangefinder_alt = nullptr;
+
         // adjust climb rate using rangefinder
-        target_climb_rate = get_surface_tracking_climb_rate_with_Hokuyo_lidar(target_climb_rate, pos_control->get_alt_target(), G_Dt);
+        target_climb_rate = get_surface_tracking_climb_rate_with_Hokuyo_lidar(target_climb_rate, pos_control->get_alt_target(), G_Dt, dist_err, target_rangefinder_alt);
 
         // TEMP for testing backstepping
-        backstepping->get_gains(g.BS_y_k1,g.BS_y_k2,g.BS_y_k3,g.BS_z_k1,g.BS_z_k2,g.BS_z_k3);
-        backstepping->get_imax(g.BS_imax_y, g.BS_imax_z);
-        backstepping->get_target_pos(0, pos_control->get_alt_target()*0.01f);   // in m
-        backstepping->pos_update();
-
-        backstepping->update_alt_controller();
-        pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());
+        pos_sensor.data.dist_err = *dist_err;
+        pos_sensor.data.target_rangefinder_alt = *target_rangefinder_alt;
         pos_sensor.data.AC_alt_target = pos_control->get_alt_target();
         pos_sensor.data.AC_cr = target_climb_rate;
 

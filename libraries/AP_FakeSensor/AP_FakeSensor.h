@@ -91,6 +91,8 @@ struct FakeSensor_data_t
     // controller output
     float AC_alt_target;
     float AC_cr;
+    float dist_err;
+    float target_rangefinder_alt;
     pos_error_t perr;
     float mthrust_out[3];   // motor thrust output
     float u1;               // Backstepping thrust output
