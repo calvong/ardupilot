@@ -28,6 +28,10 @@ void Copter::ModeTunnel::run()
     pos_control->set_speed_z(-get_pilot_speed_dn(), g.pilot_speed_up);
     pos_control->set_accel_z(g.pilot_accel_z);
 
+    // get gains for backstepping
+    backstepping->get_gains(g.BS_y_k1,g.BS_y_k2,g.BS_y_k3,g.BS_z_k1,g.BS_z_k2,g.BS_z_k3);
+    backstepping->get_imax(g.BS_imax_y, g.BS_imax_z);
+
     // apply SIMPLE mode transform to pilot inputs
     update_simple_mode();
 
@@ -66,6 +70,10 @@ void Copter::ModeTunnel::run()
         pos_control->relax_alt_hold_controllers(0.0f);   // forces throttle output to go to zero
 
         pos_control->update_z_controller();
+
+        // backstepping
+        backstepping->reset_integral();
+
         break;
 
     case AltHold_Takeoff:
@@ -112,28 +120,29 @@ void Copter::ModeTunnel::run()
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
         pos_control->relax_alt_hold_controllers(0.0f);   // forces throttle output to go to zero
         pos_control->update_z_controller();
+
+        // backstepping
+        backstepping->reset_integral();
+
         break;
 
     case AltHold_Flying:
         motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
 
-#if AC_AVOID_ENABLED == ENABLED
-        // apply avoidance
-        copter.avoid.adjust_roll_pitch(target_roll, target_pitch, copter.aparm.angle_max);
-#endif
-
         // call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 
-        // adjust climb rate using rangefinder
-        target_climb_rate = get_surface_tracking_climb_rate(target_climb_rate, pos_control->get_alt_target(), G_Dt);
+        // call backstepping controller
+        backstepping->get_target_pos(0, g.BS_altd); // TODO
+        backstepping->pos_update();
 
-        // get avoidance adjusted climb rate
-        target_climb_rate = get_avoidance_adjusted_climbrate(target_climb_rate);
 
-        // call position controller
-        pos_control->set_alt_target_from_climb_rate_ff(target_climb_rate, G_Dt, false);
-        pos_control->update_z_controller();
+        backstepping->update_alt_controller();
+
+        // get control outputs
+        pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());
+        pos_sensor.data.AC_alt_target = g.BS_altd;
+
         break;
     }
 }

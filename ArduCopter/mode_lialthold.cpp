@@ -115,11 +115,6 @@ void Copter::ModeLiAltHold::run()
     case AltHold_Flying:
         motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
 
-#if AC_AVOID_ENABLED == ENABLED
-        // apply avoidance
-        copter.avoid.adjust_roll_pitch(target_roll, target_pitch, copter.aparm.angle_max);
-#endif
-
         // call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 
@@ -136,9 +131,6 @@ void Copter::ModeLiAltHold::run()
         pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());
         pos_sensor.data.AC_alt_target = pos_control->get_alt_target();
         pos_sensor.data.AC_cr = target_climb_rate;
-
-        // get avoidance adjusted climb rate
-        target_climb_rate = get_avoidance_adjusted_climbrate(target_climb_rate);
 
         // call position controller
         pos_control->set_alt_target_from_climb_rate_ff(target_climb_rate, G_Dt, false);

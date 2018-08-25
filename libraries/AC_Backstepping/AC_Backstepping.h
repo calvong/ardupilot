@@ -1,5 +1,6 @@
 #pragma once
 
+#include <AP_HAL/AP_HAL.h>
 #include <AP_Common/AP_Common.h>
 #include <AP_Param/AP_Param.h>
 #include <AP_Math/AP_Math.h>
@@ -11,6 +12,7 @@
 #include <AC_AttitudeControl/AC_AttitudeControl.h>
 #include "AP_FakeSensor/AP_FakeSensor.h"
 #include <RC_Channel/RC_Channel.h>
+#include <GCS_MAVLink/GCS.h>
 
 #define G                                   -9.81 // gravity
 #define DEFAULT_IMAX                        10
@@ -45,9 +47,9 @@ public:
 
     void update_alt_controller();
     void update_lateral_controller();
-    void reset_integral_y();
-    void reset_integral_z();
+    void reset_integral();
 
+    void debug_print();
     void write_log();
 
 private:
@@ -96,4 +98,6 @@ private:
 
     float _limit_integral(float gain, float current_err, char yz);
     float _limit_thrust(float thr);
+
+    unsigned int _loop_counter = 0; // TEMP
 };
