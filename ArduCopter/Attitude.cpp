@@ -228,7 +228,7 @@ float Copter::get_surface_tracking_climb_rate(int16_t target_rate, float current
 
 // get_surface_tracking_climb_rate - hold copter at the desired distance above the ground with the Hokuyo lidar
 //      returns climb rate (in cm/s) which should be passed to the position controller
-float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_rate, float current_alt_target, float dt)
+float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_rate, float current_alt_target, float dt, float* dist_err, float* target_rngfndr_alt)
 {
 
     if (!pos_sensor.data_is_ok()) {
@@ -261,6 +261,9 @@ float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_r
     distance_error = (target_rangefinder_alt - pos_sensor.data.alt_cm) - (current_alt_target - current_alt);
     velocity_correction = distance_error * gain;
     velocity_correction = constrain_float(velocity_correction, -THR_SURFACE_TRACKING_VELZ_MAX, THR_SURFACE_TRACKING_VELZ_MAX);
+
+    dist_err = &distance_error;
+    target_rngfndr_alt = &target_rangefinder_alt;
 
     // return combined pilot climb rate + rate to correct rangefinder alt error
     return (target_rate + velocity_correction);
