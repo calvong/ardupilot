@@ -1,7 +1,6 @@
 #include "AC_Backstepping.h"
 
 
-
 AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav& inav,
                                  const AP_Motors& motors, AC_AttitudeControl& attitude_control,
                                  const AP_FakeSensor& fs) :
@@ -11,17 +10,7 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
                                  _attitude_control(attitude_control),
                                  _fs(fs)
 {
-    /*
-    _gains.k1_y = 1;
-    _gains.k2_y = 1;
-    _gains.k3_y = 1;
-    _gains.k1_z = 1;
-    _gains.k2_z = 1;
-    _gains.k3_z = 1;
-
-    _imax_y = DEFAULT_IMAX;
-    _imax_z = DEFAULT_IMAX;
-    */
+    _pos_target_z = 0.5f; // 50 cm above ground
 }
 
 void AC_Backstepping::update_alt_controller()
@@ -37,20 +26,21 @@ void AC_Backstepping::update_alt_controller()
 
     // update d term
     _pos.prev_ez = ez;
-    float dterm_z = dez*(_gains.k1_z + _gains.k3_z);
+    float dterm_z = dez*(_gains.k2_z + _gains.k3_z);
     perr.dterm_z = dterm_z;
 
     // restrict integral
-    float iterm_z = _limit_integral(_gains.k2_z*_gains.k3_z, ez, 'z');
+    float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
     perr.iterm_z = iterm_z;
 
     // compute u1
-    _u1 = (dterm_z + ez*(_gains.k2_z + _gains.k1_z*_gains.k3_z) + iterm_z) / (cphi*cthe);
-    _u1 = _limit_thrust(_u1);
+    _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z) / (cphi*cthe);
+
+    _thr_out = _limit_thrust(_u1 + _motors.get_throttle_hover());
 
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
-    //_attitude_control.set_throttle_out(_thr_out, false, BACKSTEPPING_THROTTLE_CUTOFF_FREQ);
+    _attitude_control.set_throttle_out(_thr_out, false, BACKSTEPPING_THROTTLE_CUTOFF_FREQ);
 }
 
 void AC_Backstepping::update_lateral_controller()
@@ -61,6 +51,16 @@ void AC_Backstepping::update_lateral_controller()
 void AC_Backstepping::write_log()
 {
 
+}
+
+void AC_Backstepping::debug_print()
+{
+    if (_loop_counter >= 100)
+    {
+        gcs().send_text(MAV_SEVERITY_INFO, "iez %f, u1 %f, thrO %f, ez %f\n", _pos.iez, _u1, _thr_out, perr.ez);
+        _loop_counter = 0;
+    }
+    _loop_counter++;
 }
 
 void AC_Backstepping::pos_update()
@@ -91,15 +91,10 @@ void AC_Backstepping::get_gains(float yk1, float yk2, float yk3, float zk1, floa
     _gains.k3_z = zk3;
 }
 
-
-void AC_Backstepping::reset_integral_y()
-{
-    _pos.iey = 0;
-}
-
-void AC_Backstepping::reset_integral_z()
+void AC_Backstepping::reset_integral()
 {
     _pos.iez = 0;
+    _pos.iey = 0;
 }
 
 float AC_Backstepping::_limit_thrust(float thr)
@@ -128,6 +123,7 @@ float AC_Backstepping::_limit_integral(float gain, float current_err, char yz)
                 out = -_imax_y;
                 _pos.iey -= current_err*_dt;
             }
+            else    out = i_term;
         }break;
 
         case 'z': {
@@ -143,6 +139,7 @@ float AC_Backstepping::_limit_integral(float gain, float current_err, char yz)
                 out =  -_imax_z;
                 _pos.iez -= current_err*_dt;
             }
+            else    out = i_term;
         }break;
     }
 
