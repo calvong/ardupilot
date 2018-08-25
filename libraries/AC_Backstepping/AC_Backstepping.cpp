@@ -27,11 +27,11 @@ void AC_Backstepping::update_alt_controller()
     // update d term
     _pos.prev_ez = ez;
     float dterm_z = dez*(_gains.k2_z + _gains.k3_z);
-    perr.dterm_z = dterm_z;
+    perr.dterm_z = dez;
 
     // restrict integral
     float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
-    perr.iterm_z = iterm_z;
+    perr.iterm_z = _pos.iez;
 
     // compute u1
     _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z) / (cphi*cthe);
