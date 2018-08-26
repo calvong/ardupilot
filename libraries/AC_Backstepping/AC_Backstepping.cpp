@@ -28,7 +28,7 @@ void AC_Backstepping::update_alt_controller()
     // discard crazy values
     if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)   ez = _pos.prev_ez;
     _pos.prev_ez = ez;
-    perr.ez = ez;
+    perr.ez = ez;   // log
 
     // check if new data set is received
     if (_prev_nset != _fs.data.nset)
@@ -46,16 +46,19 @@ void AC_Backstepping::update_alt_controller()
 
     // update d term
     float dterm_z = _pos.vel_z_err*(_gains.k2_z + _gains.k3_z);
-    perr.dterm_z = _pos.vel_z_err;
+    perr.dterm_z = _pos.vel_z_err;  // log
 
     // restrict integral
     float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
-    perr.iterm_z = _pos.iez;
+    perr.iterm_z = _pos.iez;    // log
+
+    // restrict derivative to be hover throttle at max
+    dterm_z = _limit_derivative(dterm_z, HOVER_THROTTLE);
 
     // compute u1
     _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z) / (cphi*cthe);
 
-    _thr_out = _limit_thrust(_u1 + _motors.get_throttle_hover());
+    _thr_out = _limit_thrust(_u1 + HOVER_THROTTLE);
 
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
@@ -121,6 +124,13 @@ float AC_Backstepping::_limit_thrust(float thr)
     if (thr > 1)        return 1.0f;
     else if (thr < 0)   return 0;
     else                return thr;
+}
+
+float AC_Backstepping::_limit_derivative(float d_term, float threshold)
+{
+    if (d_term > threshold)         return threshold;
+    else if (d_term < -threshold)   return -threshold;
+    else                            return d_term;
 }
 
 float AC_Backstepping::_limit_integral(float gain, float current_err, char yz)

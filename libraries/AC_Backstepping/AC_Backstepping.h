@@ -20,7 +20,8 @@
 #define BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ  5.0f
 #define THRUST_SCALE_FACTOR                 0.01f
 #define POS_ERROR_THRESHOLD                 1.0f    // in m, max allowed change in position
-//TODO: check inav vel direction +/-ve
+#define HOVER_THROTTLE                      0.34f   // seems to be 0.34 in container?
+
 class AC_Backstepping
 {
 public:
@@ -98,6 +99,7 @@ private:
     float _u1;               // thrust: raw controller output from altitude controller
     float _target_roll;     // desired roll output from lateral controller
 
+    float _limit_derivative(float d_term, float threshold);
     float _limit_integral(float gain, float current_err, char yz);
     float _limit_thrust(float thr);
 
