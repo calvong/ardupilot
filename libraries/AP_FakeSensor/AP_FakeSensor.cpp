@@ -67,6 +67,7 @@ void AP_FakeSensor::_read_AHRS()
     data.yaw = _ahrs->yaw;
 }
 
+
 void AP_FakeSensor::_get_pos()
 {
     if (_uart == nullptr)    {return;}
@@ -75,6 +76,7 @@ void AP_FakeSensor::_get_pos()
     int16_t nbytes = _uart->available();
 
     char d[6];      // temp buffer for 6 digits
+    char d7[7];
 
     // position update
     while (nbytes-- > 0)
@@ -106,6 +108,13 @@ void AP_FakeSensor::_get_pos()
             data.alt = (float) atoi(d) * 0.001f;  // m
             data.alt_cm = (int16_t) data.alt * 0.1f; // cm
 
+            // nset
+            for (size_t i=0; i < 7; i++)
+            {
+                d7[i] = _linebuf[i+20];
+            }
+            data.nset = atoi(d7);
+
             // assign status
             if (_linebuf[1] == '1')
                 data.status = Good;
@@ -121,7 +130,11 @@ void AP_FakeSensor::_get_pos()
             if (_linebuf_len == sizeof(_linebuf)) {_linebuf_len = 0;}
         }
     }
+
+    //gcs().send_text(MAV_SEVERITY_INFO, "alt %f, n %d\n", data.alt, data.nset);
 }
+
+
 
 vector<unsigned char> AP_FakeSensor::_msg_encoder()
 {
@@ -154,6 +167,7 @@ vector<unsigned char> AP_FakeSensor::_msg_encoder()
     result = _float2byte(result, data.AC_cr);
     result = _float2byte(result, data.dist_err);
     result = _float2byte(result, data.target_rangefinder_alt);
+    result = _float2byte(result, data.perr.dtermfil_z);
 
     return result;
 }
@@ -213,4 +227,22 @@ void AP_FakeSensor::_read_radio()
     data.ch.aux7    = rc().channel(CH_7)->get_radio_in();
     data.ch.aux8    = rc().channel(CH_8)->get_radio_in();
     data.ch.aux9    = rc().channel(CH_9)->get_radio_in();
+}
+
+int AP_FakeSensor::_byte2int(char* buffer, int position)
+{
+    int value;
+    return value = (int) (buffer[position*4]<<24|buffer[position*4+1]<<16|buffer[position*4+2]<<8|buffer[position*4+3]);
+}
+
+float AP_FakeSensor::_byte2float(char* buffer, int position)
+{
+    float_num f;
+
+    f.buf[0] = buffer[position*4+0];
+    f.buf[1] = buffer[position*4+1];
+    f.buf[2] = buffer[position*4+2];
+    f.buf[3] = buffer[position*4+3];
+
+    return f.num;
 }
