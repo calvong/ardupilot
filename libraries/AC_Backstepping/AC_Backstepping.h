@@ -17,8 +17,9 @@
 #define G                                   -9.81 // gravity
 #define DEFAULT_IMAX                        10
 #define BACKSTEPPING_THROTTLE_CUTOFF_FREQ   2.0f    // low-pass filter on accel error (unit: hz)
+#define BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ  5.0f
 #define THRUST_SCALE_FACTOR                 0.01f
-
+#define POS_ERROR_THRESHOLD                 1.0f    // in m, max allowed change in position
 //TODO: check inav vel direction +/-ve
 class AC_Backstepping
 {
@@ -75,8 +76,8 @@ private:
         float y;    // m
         float z;    // m
 
-        float vel_y = 0;
-        float vel_z = 0;
+        float vel_y_err = 0;
+        float vel_z_err = 0;
 
         float prev_ey = 0;    // previous pos y error
         float prev_ez = 0;    // previous pos z error
@@ -88,6 +89,7 @@ private:
     float _dt;
     float _pos_target_z;
     float _pos_target_y;
+    int   _prev_nset;
 
     float _imax_z;   // max integral term for pos z
     float _imax_y;   // max integral term for pos y
@@ -100,4 +102,6 @@ private:
     float _limit_thrust(float thr);
 
     unsigned int _loop_counter = 0; // TEMP
+
+    LowPassFilterFloat _vel_error_filter;
 };

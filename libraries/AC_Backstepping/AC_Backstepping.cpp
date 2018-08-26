@@ -1,5 +1,6 @@
 #include "AC_Backstepping.h"
 
+extern const AP_HAL::HAL &hal;
 
 AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav& inav,
                                  const AP_Motors& motors, AC_AttitudeControl& attitude_control,
@@ -11,6 +12,9 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
                                  _fs(fs)
 {
     _pos_target_z = 0.5f; // 50 cm above ground
+    _dt = 0.025f;
+    _vel_error_filter.set_cutoff_frequency(BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ);
+    //hal.uartA->begin(115200); // debug
 }
 
 void AC_Backstepping::update_alt_controller()
@@ -18,16 +22,31 @@ void AC_Backstepping::update_alt_controller()
     float cphi = _ahrs.cos_roll();  // cos(phi)
     float cthe = _ahrs.cos_pitch(); // cos(theta)
 
+    // position error
     float ez = _pos_target_z - _pos.z;
-    float  dez = (ez - _pos.prev_ez) / _dt;
-    _pos.iez += ez * _dt;
 
+    // discard crazy values
+    if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)   ez = _pos.prev_ez;
+    _pos.prev_ez = ez;
     perr.ez = ez;
 
+    // check if new data set is received
+    if (_prev_nset != _fs.data.nset)
+    {
+        // d term with LPF
+        _pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
+
+        // i term
+        _pos.iez += ez * _dt;
+
+        // update previous data
+        _prev_nset = _fs.data.nset;
+        _pos.prev_ez = ez;
+    }
+
     // update d term
-    _pos.prev_ez = ez;
-    float dterm_z = dez*(_gains.k2_z + _gains.k3_z);
-    perr.dterm_z = dez;
+    float dterm_z = _pos.vel_z_err*(_gains.k2_z + _gains.k3_z);
+    perr.dterm_z = _pos.vel_z_err;
 
     // restrict integral
     float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
@@ -57,7 +76,7 @@ void AC_Backstepping::debug_print()
 {
     if (_loop_counter >= 100)
     {
-        gcs().send_text(MAV_SEVERITY_INFO, "iez %f, u1 %f, thrO %f, ez %f\n", _pos.iez, _u1, _thr_out, perr.ez);
+        gcs().send_text(MAV_SEVERITY_INFO, "vel %f, u1 %f, thrO %f, ez %f\n", _inav.get_velocity_z(), _u1, _thr_out, perr.ez);
         _loop_counter = 0;
     }
     _loop_counter++;
@@ -78,7 +97,7 @@ void AC_Backstepping::get_target_pos(float yd, float zd)
 
 void AC_Backstepping::set_dt(float delta_sec)
 {
-    _dt = delta_sec;
+    _dt = 0.025f;//delta_sec;
 }
 
 void AC_Backstepping::get_gains(float yk1, float yk2, float yk3, float zk1, float zk2, float zk3)

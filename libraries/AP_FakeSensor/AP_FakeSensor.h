@@ -13,8 +13,8 @@
 #include <ctype.h>
 
 #define ODROID_BAUDRATE 921600
-
-#define DATA_BUF_SIZE 21 // 21 char in a message
+#define N_MSG_VARIABLE  5
+#define DATA_BUF_SIZE 27 // 27 char in a message
 #define FAR_THRESHOLD 2000 // mm
 
 using namespace std;
@@ -53,6 +53,7 @@ struct pos_error_t
 {
     float ez;
     float dterm_z;
+    float dtermfil_z; // filtered d
     float iterm_z;
 };
 
@@ -75,7 +76,7 @@ struct FakeSensor_data_t
     float pos_z;    // m
     float alt;      // m
     int16_t alt_cm; // cm
-
+    int nset = 0;
 
     // Pixhawk 2 info
     float roll;
@@ -135,4 +136,6 @@ private:
     float _limit_thr(float thr);    // restrict throttle from 0-1 (mainly noise issue?)
     vector<unsigned char> _int2byte(vector<unsigned char> in, int value);
     vector<unsigned char> _float2byte(vector<unsigned char> in, float value);
+    int _byte2int(char* buffer, int position);
+    float _byte2float(char* buffer, int position);
 };
