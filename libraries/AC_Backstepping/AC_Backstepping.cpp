@@ -16,7 +16,7 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
     _dt = 0.025f;
     _vel_error_filter.set_cutoff_frequency(BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ);
 
-    //hal.uartA->begin(115200); // debug
+    hal.uartA->begin(115200); // debug
 }
 
 void AC_Backstepping::update_alt_controller()
@@ -29,7 +29,7 @@ void AC_Backstepping::update_alt_controller()
 
     // discard crazy values
     if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)   ez = _pos.prev_ez;
-    _pos.prev_ez = ez;
+
     perr.ez = ez;   // log
 
     // check if new data set is received
@@ -44,8 +44,9 @@ void AC_Backstepping::update_alt_controller()
 
         // update previous data
         _prev_nset = _fs.data.nset;
-        _pos.prev_ez = ez;
     }
+
+    _pos.prev_ez = ez;
 
     // update d term
     float dterm_z = _pos.vel_z_err*(_gains.k2_z + _gains.k3_z);
