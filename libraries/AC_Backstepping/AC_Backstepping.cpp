@@ -11,12 +11,17 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
                                  _attitude_control(attitude_control),
                                  _fs(fs)
 {
+    // init variables
     _imax_z = _motors.get_throttle_hover() * 0.2f;  // TEMP
     _pos_target_z = 0.5f; // 50 cm above ground
     _dt = 0.025f;
+    _mode_switch_counter = 0;
     _vel_error_filter.set_cutoff_frequency(BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ);
 
-    hal.uartA->begin(115200); // debug
+    // init flags
+    flags.switched_mode = false;
+    flags.mode_transition_completed = false;
+    //hal.uartA->begin(115200); // debug
 }
 
 void AC_Backstepping::update_alt_controller()
@@ -64,6 +69,9 @@ void AC_Backstepping::update_alt_controller()
 
     _thr_out = _limit_thrust(_u1);
 
+    // mode transition throttle ramping, 0.5s
+    if (!flags.mode_transition_completed)   _thr_out = _throttle_transition(_thr_out);
+
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
     _attitude_control.set_throttle_out(_thr_out, false, BACKSTEPPING_THROTTLE_CUTOFF_FREQ);
@@ -77,6 +85,35 @@ void AC_Backstepping::update_lateral_controller()
 void AC_Backstepping::write_log()
 {
 
+}
+
+void AC_Backstepping::reset_mode_switch()
+{
+    flags.mode_transition_completed = false;
+    flags.switched_mode = false;
+    _mode_switch_counter = 0;
+}
+
+float AC_Backstepping::_throttle_transition(float BS_thr_out)
+{
+    float thr_out;
+
+    if (!flags.switched_mode)   _last_mode_thr_out = _motors.get_throttle();
+
+    flags.switched_mode = true;
+
+    if (_mode_switch_counter < 200)
+    {
+        thr_out = (200.0f - _mode_switch_counter)*_last_mode_thr_out/200.0f + _mode_switch_counter*BS_thr_out/200.0f;
+        _mode_switch_counter++;
+    }
+    else
+    {
+        flags.mode_transition_completed = true;
+        thr_out = BS_thr_out;
+    }
+
+    return thr_out;
 }
 
 void AC_Backstepping::debug_print()

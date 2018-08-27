@@ -29,7 +29,8 @@ public:
     {
         bool pilot_override;
         bool reset_integral;
-
+        bool switched_mode;
+        bool mode_transition_completed;
     }flags;
 
     pos_error_t perr;
@@ -49,7 +50,7 @@ public:
     void update_alt_controller();
     void update_lateral_controller();
     void reset_integral();
-
+    void reset_mode_switch();
     void debug_print();
     void write_log();
 
@@ -94,10 +95,13 @@ private:
     float _imax_z;   // max integral term for pos z
     float _imax_y;   // max integral term for pos y
 
+    float _last_mode_thr_out;
+    float _mode_switch_counter;
     float _thr_out;    // thrust output for motor, range from 0-1
     float _u1;               // thrust: raw controller output from altitude controller
     float _target_roll;     // desired roll output from lateral controller
 
+    float _throttle_transition(float BS_thr_out);
     float _limit_derivative(float d_term, float threshold);
     float _limit_integral(float gain, float current_err, char yz);
     float _limit_thrust(float thr);
