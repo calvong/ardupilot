@@ -20,7 +20,6 @@
 #define BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ  5.0f
 #define THRUST_SCALE_FACTOR                 0.01f
 #define POS_ERROR_THRESHOLD                 1.0f    // in m, max allowed change in position
-#define HOVER_THROTTLE                      0.34f   // seems to be 0.34 in container?
 
 class AC_Backstepping
 {

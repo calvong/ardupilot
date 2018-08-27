@@ -11,9 +11,11 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
                                  _attitude_control(attitude_control),
                                  _fs(fs)
 {
+    _imax_z = _motors.get_throttle_hover() * 0.2f;  // TEMP
     _pos_target_z = 0.5f; // 50 cm above ground
     _dt = 0.025f;
     _vel_error_filter.set_cutoff_frequency(BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ);
+
     //hal.uartA->begin(115200); // debug
 }
 
@@ -34,7 +36,8 @@ void AC_Backstepping::update_alt_controller()
     if (_prev_nset != _fs.data.nset)
     {
         // d term with LPF
-        _pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
+        //_pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
+        _pos.vel_z_err = (ez - _pos.prev_ez) / _dt;
 
         // i term
         _pos.iez += ez * _dt;
@@ -53,12 +56,12 @@ void AC_Backstepping::update_alt_controller()
     perr.iterm_z = _pos.iez;    // log
 
     // restrict derivative to be hover throttle at max
-    dterm_z = _limit_derivative(dterm_z, HOVER_THROTTLE);
+    dterm_z = _limit_derivative(dterm_z, _motors.get_throttle_hover()*0.3f);
 
     // compute u1
-    _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z) / (cphi*cthe);
+    _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z + _motors.get_throttle_hover()) / (cphi*cthe);
 
-    _thr_out = _limit_thrust(_u1 + HOVER_THROTTLE);
+    _thr_out = _limit_thrust(_u1);
 
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
@@ -173,12 +176,6 @@ float AC_Backstepping::_limit_integral(float gain, float current_err, char yz)
     }
 
     return out;
-}
-
-void AC_Backstepping::get_imax(float imax_y, float imax_z)
-{
-    _imax_y = imax_y;
-    _imax_z = imax_z;
 }
 
 float AC_Backstepping::get_u1()
