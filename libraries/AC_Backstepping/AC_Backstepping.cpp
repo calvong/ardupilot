@@ -41,8 +41,8 @@ void AC_Backstepping::update_alt_controller()
     if (_prev_nset != _fs.data.nset)
     {
         // d term with LPF
-        //_pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
-        _pos.vel_z_err = (ez - _pos.prev_ez) / _dt;
+        _pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
+        perr.dtermfil_z = _pos.vel_z_err;
 
         // i term
         _pos.iez += ez * _dt;
