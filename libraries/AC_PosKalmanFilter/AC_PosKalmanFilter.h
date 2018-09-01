@@ -42,19 +42,13 @@ private:
 
     position_t _pos;
 
-    float pos_z_fil2hz; // TEMP
-    float pos_z_fil4hz; // TEMP
-    unsigned int loop_time; // TEMP
-
     int _prev_data_set;
 
     // KF matrix operation
+    void _init();
     vector<float> _Kk(vector<float> P);
     vector<float> _P_estimate(vector<float> P, vector<float> K);
     vector<float> _P_predict(vector<float> P);
     vector<float> _X_estimate(vector<float> K, vector<float> Xp, position_t pos);
     vector<float> _X_predict(vector<float> Xe, float ay, float az);
-
-    LowPassFilterFloat _pos_z_filter;
-    LowPassFilterFloat _pos_y_filter;
 };
