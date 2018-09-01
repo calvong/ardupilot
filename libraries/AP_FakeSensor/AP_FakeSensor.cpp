@@ -77,6 +77,8 @@ void AP_FakeSensor::_get_pos()
 
     int16_t nbytes = _uart->available();
 
+    if (nbytes) _prev_pos = data.pos;   // storing the previous data for comparison
+
     char d[6];      // temp buffer for 6 digits
     char d7[7];
 
@@ -94,6 +96,7 @@ void AP_FakeSensor::_get_pos()
                 d[i] = _linebuf[i+2];
             }
             data.pos.y = (float) atoi(d)*0.001f;   // m
+            data.pos.y = _msg_filterFloat(_prev_pos.y, data.pos.y);
 
             // pos z
             for (size_t i = 0; i < 6; i++)
@@ -101,6 +104,7 @@ void AP_FakeSensor::_get_pos()
                 d[i] = _linebuf[i+8];
             }
             data.pos.z = (float) atoi(d)*0.001f;   // m
+            data.pos.z = _msg_filterFloat(_prev_pos.z, data.pos.z);
 
             // alt
             for (size_t i = 0; i < 6; i++)
@@ -108,6 +112,7 @@ void AP_FakeSensor::_get_pos()
                 d[i] = _linebuf[i+14];
             }
             data.pos.alt = (float) atoi(d) * 0.001f;  // m
+            data.pos.alt = _msg_filterFloat(_prev_pos.alt, data.pos.alt);
             data.pos.alt_cm = (int16_t) (data.pos.alt * 0.1f); // cm
 
             // nset
@@ -136,7 +141,23 @@ void AP_FakeSensor::_get_pos()
     //hal.uartA->printf("alt %f, n %d\n", data.alt, data.nset);
 }
 
+float AP_FakeSensor::_msg_filterFloat(float prev, float curr)
+{
+    float out;
 
+    if (fabs(1 - prev/curr) > 0.6)
+    {
+        out = curr/10.0f;
+
+        if (fabs(1 - out/prev) > 0.6)   out = prev;
+    }
+    else
+    {
+        out = curr;
+    }
+
+    return out;
+}
 
 vector<unsigned char> AP_FakeSensor::_msg_encoder()
 {

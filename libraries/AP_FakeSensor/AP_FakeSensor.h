@@ -139,6 +139,7 @@ private:
     AP_HAL::UARTDriver *_uart = nullptr;
     char _linebuf[DATA_BUF_SIZE];
     uint8_t _linebuf_len = 0;
+    position_t _prev_pos;
 
     AP_MotorsMulticopter*   _motors;
     AP_AHRS_View*           _ahrs;
@@ -149,6 +150,7 @@ private:
     void _read_AHRS();
     vector<unsigned char> _msg_encoder();
     void _msg_sender(vector<unsigned char>  msg);
+    float _msg_filterFloat(float prev, float curr);
 
     // helper
     float _limit_thr(float thr);    // restrict throttle from 0-1 (mainly noise issue?)
