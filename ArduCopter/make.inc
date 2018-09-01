@@ -67,3 +67,4 @@ LIBRARIES += AP_OSD
 LIBRARIES += AP_FakeSensor
 LIBRARIES += AC_Backstepping
 LIBRARIES += AC_TunnelPID
+LIBRARIES += AC_PosKalmanFilter

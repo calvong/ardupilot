@@ -90,6 +90,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(update_optical_flow,  200,    160),
 #endif
     SCHED_TASK(read_FakeSensor,      100,    200),
+    SCHED_TASK(upate_posKF,          400,     50),
     SCHED_TASK(update_batt_compass,   10,    120),
     SCHED_TASK(read_aux_all,          10,     50),
     SCHED_TASK(arm_motors_check,      10,     50),
@@ -227,6 +228,10 @@ void Copter::loop()
     G_Dt = scheduler.get_last_loop_time_s();
 }
 
+void Copter::upate_posKF()
+{
+    pkf->run();
+}
 
 // Main loop - 400hz
 void Copter::fast_loop()

@@ -86,6 +86,7 @@
 #include <AP_FakeSensor/AP_FakeSensor.h>
 #include <AC_TunnelPID/AC_TunnelPID.h>
 #include <AC_Backstepping/AC_Backstepping.h>
+#include <AC_PosKalmanFilter/AC_PosKalmanFilter.h>
 
 // Configuration
 #include "defines.h"
@@ -492,6 +493,7 @@ private:
     AC_AttitudeControl_t *attitude_control;
     AC_PosControl *pos_control;
     AC_Backstepping *backstepping;
+    AC_PosKalmanFilter *pkf;
     AC_WPNav *wp_nav;
     AC_Loiter *loiter_nav;
 #if MODE_CIRCLE_ENABLED == ENABLED
@@ -663,6 +665,7 @@ private:
     void set_motor_emergency_stop(bool b);
 
     // ArduCopter.cpp
+    void upate_posKF();
     void fast_loop();
     void rc_loop();
     void throttle_loop();

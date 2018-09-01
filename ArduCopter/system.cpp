@@ -175,8 +175,7 @@ void Copter::init_ardupilot()
 
     attitude_control->parameter_sanity_check();
     pos_control->set_dt(scheduler.get_loop_period_s());
-    backstepping->set_dt(scheduler.get_loop_period_s());
-    
+
     // init the optical flow sensor
     init_optflow();
 
@@ -591,6 +590,11 @@ void Copter::allocate_motors(void)
     backstepping = new AC_Backstepping(*ahrs_view, inertial_nav, *motors, *attitude_control, pos_sensor);
     if (backstepping == nullptr) {
         AP_HAL::panic("Unable to allocate Backstepping");
+    }
+
+    pkf = new AC_PosKalmanFilter(*ahrs_view, inertial_nav, pos_sensor);
+    if (pkf == nullptr) {
+        AP_HAL::panic("Unable to allocate PosKalmanFilter");
     }
 
     AP_Param::load_object_from_eeprom(pos_control, pos_control->var_info);
