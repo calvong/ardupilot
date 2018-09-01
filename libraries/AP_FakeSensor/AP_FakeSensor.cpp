@@ -23,6 +23,8 @@ void AP_FakeSensor::get_motors(AP_MotorsMulticopter* motors)
 
 void AP_FakeSensor::init()
 {
+    _flag_init = false;
+
     _uart = hal.uartC;  // using telem1 port
     if (_uart == nullptr)    {return;}
 
@@ -96,7 +98,7 @@ void AP_FakeSensor::_get_pos()
                 d[i] = _linebuf[i+2];
             }
             data.pos.y = (float) atoi(d)*0.001f;   // m
-            data.pos.y = _msg_filterFloat(_prev_pos.y, data.pos.y);
+            //data.pos.y = _msg_filterFloat(_prev_pos.y, data.pos.y);
 
             // pos z
             for (size_t i = 0; i < 6; i++)
@@ -104,7 +106,7 @@ void AP_FakeSensor::_get_pos()
                 d[i] = _linebuf[i+8];
             }
             data.pos.z = (float) atoi(d)*0.001f;   // m
-            data.pos.z = _msg_filterFloat(_prev_pos.z, data.pos.z);
+            //data.pos.z = _msg_filterFloat(_prev_pos.z, data.pos.z);
 
             // alt
             for (size_t i = 0; i < 6; i++)
@@ -112,7 +114,7 @@ void AP_FakeSensor::_get_pos()
                 d[i] = _linebuf[i+14];
             }
             data.pos.alt = (float) atoi(d) * 0.001f;  // m
-            data.pos.alt = _msg_filterFloat(_prev_pos.alt, data.pos.alt);
+            //data.pos.alt = _msg_filterFloat(_prev_pos.alt, data.pos.alt);
             data.pos.alt_cm = (int16_t) (data.pos.alt * 0.1f); // cm
 
             // nset
@@ -136,6 +138,10 @@ void AP_FakeSensor::_get_pos()
 
             if (_linebuf_len == sizeof(_linebuf)) {_linebuf_len = 0;}
         }
+
+        _flag_init = true;
+        // TEMP
+        data.pos.z = data.pos.alt;
     }
 
     //hal.uartA->printf("alt %f, n %d\n", data.alt, data.nset);

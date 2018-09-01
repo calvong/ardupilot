@@ -11,28 +11,37 @@ AC_PosKalmanFilter::AC_PosKalmanFilter(const AP_AHRS_View& ahrs,
 {
     hal.uartA->begin(115200); // debug
 
-    _pos_z_filter.set_cutoff_frequency(POS_FILTER_CUTOFF_FREQ);
-    _pos_y_filter.set_cutoff_frequency(4.0f);
+    _init();
+}
 
+void AC_PosKalmanFilter::_init()
+{
     _Xp.reserve(4);
     _Xe.reserve(4);
     _Pp.reserve(8);
     _Pe.reserve(8);
     _K.reserve(4);
+
+    for (int i=0;i<4;i++)
+    {
+        _Xp.push_back(0);
+        _Xe.push_back(0);
+    }
+
+    _Pp.push_back(1);
+    _Pp.push_back(0);
+    _Pp.push_back(0);
+    _Pp.push_back(1);
+    _Pp.push_back(1);
+    _Pp.push_back(0);
+    _Pp.push_back(0);
+    _Pp.push_back(1);
+
+    _Pe =_Pp;
 }
 
 void AC_PosKalmanFilter::run()
 {
-    // TEMP
-    unsigned int t0 = AP_HAL::micros64();
-
-    // clearing vectors just incase
-    _Xp.clear();
-    _Xe.clear();
-    _Pp.clear();
-    _Pe.clear();
-    _K.clear();
-
     // get accelerations
     const Vector3f &accel = _ahrs.get_accel_ef_blended();
     float ay = accel.y; // TODO: need to check sign
@@ -55,16 +64,11 @@ void AC_PosKalmanFilter::run()
     }
 
     _pos.y  = _Xe[0];
-    _pos.z  = _Xe[1];
-    _pos.vy = _Xe[2];
+    _pos.vy = _Xe[1];
+    _pos.z  = _Xe[2];
     _pos.vz = _Xe[3];
 
-    pos_z_fil2hz = _pos_z_filter.apply(_pos.z, dt_KF);
-    pos_z_fil4hz = _pos_y_filter.apply(_pos.z, dt_KF);
-
     _prev_data_set = _fs.data.pos.nset;
-
-    loop_time = AP_HAL::micros64() - t0;
 
     print_shit();
 }
@@ -164,7 +168,7 @@ position_t AC_PosKalmanFilter::get_pos()
 
 void AC_PosKalmanFilter::print_shit()
 {
-    hal.uartA->printf("alt %f, pos_z %f, z_4hz %f, KFdt:%d\n", _fs.data.pos.alt, _pos.z, pos_z_fil4hz, loop_time);
+    hal.uartA->printf("alt %f, pos_z %f\n", _fs.data.pos.alt, _pos.z);
 }
 
 void AC_PosKalmanFilter::write_log()
@@ -177,16 +181,14 @@ void AC_PosKalmanFilter::write_log()
     double accel_z = accel.z/(_ahrs.cos_roll()*_ahrs.cos_pitch());
     double accel_z_fil = _pos_z_filter.apply(accel_z, 0.0025f);
 
-    DataFlash_Class::instance()->Log_Write("PKF", "TimeUS,ALT,VELZ,ACCZ,ACCZF,NSET,POSZ,Z2HZ, Z4HZ",
-                                           "smnoo-mmm", "F00000000", "Qffffifff",
+    DataFlash_Class::instance()->Log_Write("PKF", "TimeUS,ALT,VELZ,ACCZ,ACCZF,NSET,POSZ",
+                                           "smnoo-m", "F000000", "Qffffif",
                                            AP_HAL::micros64(),
                                            (double) _fs.data.pos.alt,
                                            (double) velocity.z,
                                            (double) accel_z,
                                            (double) accel_z_fil,
                                            _fs.data.pos.nset,
-                                            _pos.z,
-                                            pos_z_fil2hz,
-                                            pos_z_fil4hz);
+                                            _pos.z);
 
 }

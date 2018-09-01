@@ -140,7 +140,8 @@ private:
     char _linebuf[DATA_BUF_SIZE];
     uint8_t _linebuf_len = 0;
     position_t _prev_pos;
-
+    bool _flag_init = false;
+    
     AP_MotorsMulticopter*   _motors;
     AP_AHRS_View*           _ahrs;
 
