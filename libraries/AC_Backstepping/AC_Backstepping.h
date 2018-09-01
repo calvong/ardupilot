@@ -14,7 +14,7 @@
 #include <RC_Channel/RC_Channel.h>
 #include <GCS_MAVLink/GCS.h>
 
-#define G                                   -9.81 // gravity
+#define G                                   -9.81f // gravity
 #define DEFAULT_IMAX                        10
 #define BACKSTEPPING_THROTTLE_CUTOFF_FREQ   2.0f    // low-pass filter on accel error (unit: hz)
 #define BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ  5.0f
@@ -72,20 +72,7 @@ private:
         float k3_z;
     }_gains;
 
-    struct position_t
-    {
-        float y;    // m
-        float z;    // m
-
-        float vel_y_err = 0;
-        float vel_z_err = 0;
-
-        float prev_ey = 0;    // previous pos y error
-        float prev_ez = 0;    // previous pos z error
-
-        float iey = 0;   // error integral of pos y
-        float iez = 0;   // error integral of pos z
-    }_pos;
+    position_t _pos;
 
     float _dt;
     float _pos_target_z;

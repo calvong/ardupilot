@@ -57,6 +57,28 @@ struct pos_error_t
     float iterm_z;
 };
 
+
+struct position_t
+{
+    float y;        // m
+    float z;        // m
+    float vy;       // m/s
+    float vz;       // m/s
+    float alt;      // m
+    int16_t alt_cm; // cm
+    int nset = 0;
+
+    // controller stuff
+    float vel_y_err = 0;
+    float vel_z_err = 0;
+
+    float prev_ey = 0;    // previous pos y error
+    float prev_ez = 0;    // previous pos z error
+
+    float iey = 0;   // error integral of pos y
+    float iez = 0;   // error integral of pos z
+};
+
 struct FakeSensor_data_t
 {
     /*
@@ -72,11 +94,7 @@ struct FakeSensor_data_t
         5 digits of altitude
         # end char
     */
-    float pos_y;    // m
-    float pos_z;    // m
-    float alt;      // m
-    int16_t alt_cm; // cm
-    int nset = 0;
+    position_t pos;
 
     // Pixhawk 2 info
     float roll;

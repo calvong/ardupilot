@@ -124,6 +124,7 @@ protected:
     AC_Loiter *&loiter_nav;
     AC_PosControl *&pos_control;
     AC_Backstepping *&backstepping;
+    AC_PosKalmanFilter *&pkf;
     AP_InertialNav &inertial_nav;
     AP_AHRS &ahrs;
     AC_AttitudeControl_t *&attitude_control;

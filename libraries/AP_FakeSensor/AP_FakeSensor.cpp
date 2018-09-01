@@ -4,9 +4,11 @@ extern const AP_HAL::HAL &hal;
 
 AP_FakeSensor::AP_FakeSensor()
 {
-    data.pos_y    = 0;
-    data.pos_z    = 0;
+    data.pos.y    = 0;
+    data.pos.z    = 0;
     data.status   = NotConnected;
+
+    //hat.uartA->begin(115200);   // debug
 }
 
 void AP_FakeSensor::get_AHRS(AP_AHRS_View* ahrs)
@@ -91,29 +93,29 @@ void AP_FakeSensor::_get_pos()
             {
                 d[i] = _linebuf[i+2];
             }
-            data.pos_y = (float) atoi(d)*0.001f;   // m
+            data.pos.y = (float) atoi(d)*0.001f;   // m
 
             // pos z
             for (size_t i = 0; i < 6; i++)
             {
                 d[i] = _linebuf[i+8];
             }
-            data.pos_z = (float) atoi(d)*0.001f;   // m
+            data.pos.z = (float) atoi(d)*0.001f;   // m
 
             // alt
             for (size_t i = 0; i < 6; i++)
             {
                 d[i] = _linebuf[i+14];
             }
-            data.alt = (float) atoi(d) * 0.001f;  // m
-            data.alt_cm = (int16_t) data.alt * 0.1f; // cm
+            data.pos.alt = (float) atoi(d) * 0.001f;  // m
+            data.pos.alt_cm = (int16_t) (data.pos.alt * 0.1f); // cm
 
             // nset
             for (size_t i=0; i < 7; i++)
             {
                 d7[i] = _linebuf[i+20];
             }
-            data.nset = atoi(d7);
+            data.pos.nset = atoi(d7);
 
             // assign status
             if (_linebuf[1] == '1')
@@ -131,7 +133,7 @@ void AP_FakeSensor::_get_pos()
         }
     }
 
-    //gcs().send_text(MAV_SEVERITY_INFO, "alt %f, n %d\n", data.alt, data.nset);
+    //hal.uartA->printf("alt %f, n %d\n", data.alt, data.nset);
 }
 
 

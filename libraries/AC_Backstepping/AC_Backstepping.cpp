@@ -38,7 +38,7 @@ void AC_Backstepping::update_alt_controller()
     perr.ez = ez;   // log
 
     // check if new data set is received
-    if (_prev_nset != _fs.data.nset)
+    if (_prev_nset != _fs.data.pos.nset)
     {
         // d term with LPF
         _pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
@@ -48,7 +48,7 @@ void AC_Backstepping::update_alt_controller()
         _pos.iez += ez * _dt;
 
         // update previous data
-        _prev_nset = _fs.data.nset;
+        _prev_nset = _fs.data.pos.nset;
     }
 
     _pos.prev_ez = ez;
@@ -128,8 +128,8 @@ void AC_Backstepping::debug_print()
 
 void AC_Backstepping::pos_update()
 {
-    _pos.y = _fs.data.pos_y;
-    _pos.z = _fs.data.alt;    // TEMP: change back to pos z later
+    _pos.y = _fs.data.pos.y;
+    _pos.z = _fs.data.pos.alt;    // TEMP: change back to pos z later
 }
 
 

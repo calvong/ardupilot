@@ -56,4 +56,6 @@ void Copter::ModeTunnel::run()
     pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());
     pos_sensor.data.AC_alt_target = g.BS_altd;
 
+    pkf->write_log();
+    //pkf->print_shit();
 }
