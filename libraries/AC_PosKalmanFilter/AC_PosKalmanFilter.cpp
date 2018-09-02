@@ -179,15 +179,13 @@ void AC_PosKalmanFilter::write_log()
 
     // accel z
     double accel_z = accel.z/(_ahrs.cos_roll()*_ahrs.cos_pitch());
-    double accel_z_fil = _pos_z_filter.apply(accel_z, 0.0025f);
 
     DataFlash_Class::instance()->Log_Write("PKF", "TimeUS,ALT,VELZ,ACCZ,ACCZF,NSET,POSZ",
-                                           "smnoo-m", "F000000", "Qffffif",
+                                           "smno-m", "F00000", "Qfffif",
                                            AP_HAL::micros64(),
                                            (double) _fs.data.pos.alt,
                                            (double) velocity.z,
                                            (double) accel_z,
-                                           (double) accel_z_fil,
                                            _fs.data.pos.nset,
                                             _pos.z);
 
