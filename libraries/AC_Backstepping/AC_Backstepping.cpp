@@ -129,7 +129,7 @@ void AC_Backstepping::debug_print()
 void AC_Backstepping::pos_update()
 {
     _pos.y = _fs.data.pos.y;
-    _pos.z = _fs.data.pos.alt;    // TEMP: change back to pos z later
+    _pos.z = _fs.data.pos.z;   
 }
 
 
