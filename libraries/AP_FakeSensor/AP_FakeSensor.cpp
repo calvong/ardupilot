@@ -140,8 +140,6 @@ void AP_FakeSensor::_get_pos()
         }
 
         _flag_init = true;
-        // TEMP: remove later
-        data.pos.z = data.pos.alt;
     }
 
     //hal.uartA->printf("alt %f, n %d\n", data.alt, data.nset);

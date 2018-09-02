@@ -44,7 +44,7 @@ void AC_PosKalmanFilter::run()
 {
     // get accelerations
     const Vector3f &accel = _ahrs.get_accel_ef_blended();
-    float ay = accel.y; // TODO: need to check sign
+    float ay = -accel.y;
     float az = -(accel.z + G_KF);
 
     // prediction - 400Hz
