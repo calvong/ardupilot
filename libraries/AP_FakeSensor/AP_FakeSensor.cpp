@@ -25,7 +25,7 @@ void AP_FakeSensor::init()
 {
     _flag_init = false;
 
-    _uart = hal.uartC;  // using telem1 port
+    _uart = hal.uartE;  // using GPS2 port
     if (_uart == nullptr)    {return;}
 
     _uart->begin(ODROID_BAUDRATE);
