@@ -14,10 +14,16 @@
 
 #define ODROID_BAUDRATE 921600
 #define N_MSG_VARIABLE  5
-#define DATA_BUF_SIZE 21 // 21 char in a message
+#define DATA_BUF_SIZE 16 // 4 int variables
 #define FAR_THRESHOLD 2000 // mm
 
 using namespace std;
+
+union int_num
+{
+    unsigned char buf[4];
+    int num;
+};
 
 union float_num
 {
@@ -136,7 +142,8 @@ public:
 private:
     AP_HAL::UARTDriver *_uart = nullptr;
     char _linebuf[DATA_BUF_SIZE];
-    uint8_t _linebuf_len = 0;
+    uint8_t _buflen = 0;
+    uint8_t _brokenlen = 0;
     position_t _prev_pos;
     bool _flag_init = false;
 
@@ -149,7 +156,6 @@ private:
     void _read_AHRS();
     vector<unsigned char> _msg_encoder();
     void _msg_sender(vector<unsigned char>  msg);
-    float _msg_filterFloat(float prev, float curr);
 
     // helper
     float _limit_thr(float thr);    // restrict throttle from 0-1 (mainly noise issue?)
@@ -157,4 +163,5 @@ private:
     vector<unsigned char> _float2byte(vector<unsigned char> in, float value);
     int _byte2int(char* buffer, int position);
     float _byte2float(char* buffer, int position);
+
 };

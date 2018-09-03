@@ -56,8 +56,8 @@ void GCS_MAVLINK::handle_serial_control(const mavlink_message_t *msg)
         AP::gps().lock_port(0, exclusive);
         break;
     case SERIAL_CONTROL_DEV_GPS2:
-        stream = port = hal.uartE;
-        AP::gps().lock_port(1, exclusive);
+        stream = port = hal.uartB;
+        //AP::gps().lock_port(1, exclusive);
         break;
     case SERIAL_CONTROL_DEV_SHELL:
         stream = hal.util->get_shell_stream();

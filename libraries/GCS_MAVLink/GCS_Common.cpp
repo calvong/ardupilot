@@ -65,7 +65,7 @@ GCS_MAVLINK::init(AP_HAL::UARTDriver *port, mavlink_channel_t mav_chan)
     }
 
     if (port == hal.uartC)  port = hal.uartB;
-
+    if (port == hal.uartE)  port = hal.uartB;
     _port = port;
     chan = mav_chan;
 
@@ -100,7 +100,8 @@ GCS_MAVLINK::setup_uart(const AP_SerialManager& serial_manager, AP_SerialManager
     }
 
     if (uart == hal.uartC)  uart = hal.uartB;
-
+    if (uart == hal.uartE)  uart = hal.uartB;
+    
     // get associated mavlink channel
     mavlink_channel_t mav_chan;
     if (!serial_manager.get_mavlink_channel(protocol, instance, mav_chan)) {
@@ -1287,7 +1288,7 @@ void GCS::send_statustext(MAV_SEVERITY severity, uint8_t dest_bitmask, const cha
     strncpy(statustext.msg.text, text, sizeof(statustext.msg.text));
 
     WITH_SEMAPHORE(_statustext_sem);
-    
+
     // The force push will ensure comm links do not block other comm links forever if they fail.
     // If we push to a full buffer then we overwrite the oldest entry, effectively removing the
     // block but not until the buffer fills up.
@@ -1865,7 +1866,7 @@ MAV_RESULT GCS_MAVLINK::handle_preflight_reboot(const mavlink_command_long_t &pa
     AP_Param::flush();
 
     hal.scheduler->delay(200);
-    
+
     // when packet.param1 == 3 we reboot to hold in bootloader
     const bool hold_in_bootloader = is_equal(packet.param1, 3.0f);
     hal.scheduler->reboot(hold_in_bootloader);

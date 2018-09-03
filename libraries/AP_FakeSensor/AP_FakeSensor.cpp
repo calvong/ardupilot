@@ -81,83 +81,79 @@ void AP_FakeSensor::_get_pos()
 
     if (nbytes) _prev_pos = data.pos;   // storing the previous data for comparison
 
-    char d[6];      // temp buffer for 6 digits
-    char d7[7];
+    _buflen = 0;
 
     // position update
-    while (nbytes-- > 0)
+    if (nbytes)
     {
-        char c = _uart->read();
-
-        // decode the message
-        if (c == '#')   // end bit: start processing data
+        if (nbytes == 17)
         {
-            // pos y
-            for (size_t i = 0; i < 6; i++)
+            char c = _uart->read();
+
+            if (c == '$')
             {
-                d[i] = _linebuf[i+2];
+                for (int i=0;i<16;i++)
+                {
+                    _linebuf[_buflen++] = _uart->read();
+                }
+
+                data.pos.y = (float) _byte2int(_linebuf, 1) * 0.001f;
+                data.pos.z = (float) _byte2int(_linebuf, 2) * 0.001f;
+                data.pos.nset = _byte2int(_linebuf, 3);
+
+                //hal.uartA->printf("y %f, z %f, n %d\n", data.pos.y, data.pos.z, data.pos.nset);
             }
-            data.pos.y = (float) atoi(d)*0.001f;   // m
-            //data.pos.y = _msg_filterFloat(_prev_pos.y, data.pos.y);   //TODO: to be removed
-
-            // pos z
-            for (size_t i = 0; i < 6; i++)
-            {
-                d[i] = _linebuf[i+8];
-            }
-            data.pos.z = (float) atoi(d)*0.001f;   // m
-            //data.pos.z = _msg_filterFloat(_prev_pos.z, data.pos.z);
-
-            // nset
-            for (size_t i=0; i < 7; i++)
-            {
-                d7[i] = _linebuf[i+14];
-            }
-            data.pos.nset = atoi(d7);
-
-            // assign status
-            if (_linebuf[1] == '1')
-                data.status = Good;
-            else
-                data.status = Bad;
-
-            _linebuf_len = 0; // reset
         }
         else
         {
-            _linebuf[_linebuf_len++] = c;
+            while (nbytes-->0)
+            {
+                _uart->read();//_linebuf[_brokenlen++] = _uart->read();
 
-            if (_linebuf_len == sizeof(_linebuf)) {_linebuf_len = 0;}
+            }
+
+            if (_brokenlen == 17)
+            {
+                //int y = _byte2int(_linebuf, 1);
+                //int z = _byte2int(_linebuf, 2);
+                //int nset = _byte2int(_linebuf, 3);
+
+                //hal.uartA->printf("broken y %d, z %d, n %d\n", y, z, nset);
+                _brokenlen = 0;
+            }
         }
 
         _flag_init = true;
+
     }
 
-    //hal.uartA->printf("alt %f, n %d\n", data.alt, data.nset);
+/*
+    hal.uartA->printf(" bufL %d\n", _buflen);
+
+    for (int i=0; i<_buflen;i++)
+    {
+        if (_linebuf[i] == '$')
+        {
+            if ((_buflen - i) >= 16)
+            {
+                char temp[16];
+                for (int d=0;d<16;d++)
+                {
+                    temp[d] = _linebuf[i+d];
+                    i++;
+                }
+
+                int y = _byte2int(temp, 1) * 0.001f;
+                int z = (float) _byte2int(temp, 2) * 0.001f;
+                int nset = _byte2int(temp, 3);
+
+                hal.uartA->printf("y %d, z %d, n %d\n", y, z, nset);
+            }
+        }
+    }
+*/
 }
 
-float AP_FakeSensor::_msg_filterFloat(float prev, float curr)
-{
-    float out;
-
-    if (_flag_init)
-    {
-        if (fabs(curr/prev) > 8)
-        {
-            out = curr/10.0f;
-        }
-        else
-        {
-            out = curr;
-        }
-
-        return out;
-    }
-    else
-    {
-        return curr;
-    }
-}
 
 vector<unsigned char> AP_FakeSensor::_msg_encoder()
 {
@@ -254,8 +250,14 @@ void AP_FakeSensor::_read_radio()
 
 int AP_FakeSensor::_byte2int(char* buffer, int position)
 {
-    int value;
-    return value = (int) (buffer[position*4]<<24|buffer[position*4+1]<<16|buffer[position*4+2]<<8|buffer[position*4+3]);
+    int_num value;
+    //return value = (int) (buffer[position*4]<<24|buffer[position*4+1]<<16|buffer[position*4+2]<<8|buffer[position*4+3]);
+    value.buf[0] = buffer[position*4+0];
+    value.buf[1] = buffer[position*4+1];
+    value.buf[2] = buffer[position*4+2];
+    value.buf[3] = buffer[position*4+3];
+
+    return value.num;
 }
 
 float AP_FakeSensor::_byte2float(char* buffer, int position)
