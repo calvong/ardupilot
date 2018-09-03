@@ -151,7 +151,7 @@ float AP_FakeSensor::_msg_filterFloat(float prev, float curr)
 
     if (_flag_init)
     {
-        if (fabs(1 - prev/curr) > 0.6)
+        if (fabs(curr/prev) > 8)
         {
             out = curr/10.0f;
         }
