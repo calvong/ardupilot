@@ -14,7 +14,7 @@
 
 #define ODROID_BAUDRATE 921600
 #define N_MSG_VARIABLE  5
-#define DATA_BUF_SIZE 27 // 27 char in a message
+#define DATA_BUF_SIZE 21 // 21 char in a message
 #define FAR_THRESHOLD 2000 // mm
 
 using namespace std;
@@ -64,8 +64,6 @@ struct position_t
     float z;        // m
     float vy;       // m/s
     float vz;       // m/s
-    float alt;      // m
-    int16_t alt_cm; // cm
     int nset = 0;
 
     // controller stuff

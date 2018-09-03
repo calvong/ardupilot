@@ -98,7 +98,7 @@ void AP_FakeSensor::_get_pos()
                 d[i] = _linebuf[i+2];
             }
             data.pos.y = (float) atoi(d)*0.001f;   // m
-            data.pos.y = _msg_filterFloat(_prev_pos.y, data.pos.y);
+            //data.pos.y = _msg_filterFloat(_prev_pos.y, data.pos.y);   //TODO: to be removed
 
             // pos z
             for (size_t i = 0; i < 6; i++)
@@ -106,21 +106,12 @@ void AP_FakeSensor::_get_pos()
                 d[i] = _linebuf[i+8];
             }
             data.pos.z = (float) atoi(d)*0.001f;   // m
-            data.pos.z = _msg_filterFloat(_prev_pos.z, data.pos.z);
-
-            // alt
-            for (size_t i = 0; i < 6; i++)
-            {
-                d[i] = _linebuf[i+14];
-            }
-            data.pos.alt = (float) atoi(d) * 0.001f;  // m
-            data.pos.alt = _msg_filterFloat(_prev_pos.alt, data.pos.alt);
-            data.pos.alt_cm = (int16_t) (data.pos.alt * 0.1f); // cm
+            //data.pos.z = _msg_filterFloat(_prev_pos.z, data.pos.z);
 
             // nset
             for (size_t i=0; i < 7; i++)
             {
-                d7[i] = _linebuf[i+20];
+                d7[i] = _linebuf[i+14];
             }
             data.pos.nset = atoi(d7);
 

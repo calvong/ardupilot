@@ -69,6 +69,8 @@ void AC_Backstepping::update_alt_controller()
     // mode transition throttle ramping, 0.5s
     if (!flags.mode_transition_completed)   _thr_out = _throttle_transition(_thr_out);
 
+    //hal.uartA->printf("u1 %f, thrH %f, y %f, z%f\n", _u1, _motors.get_throttle_hover(), _pos.y*1000.0f, _pos.z*1000.0f);
+
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
     _attitude_control.set_throttle_out(_thr_out, false, BACKSTEPPING_THROTTLE_CUTOFF_FREQ);
