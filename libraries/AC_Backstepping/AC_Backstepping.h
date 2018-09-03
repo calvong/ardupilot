@@ -41,7 +41,7 @@ public:
                     const AP_FakeSensor& fs);
 
     void set_dt(float delta_sec);
-    void pos_update();
+    void pos_update(position_t pos);
     void get_imax(float imax_y, float imax_z);
     void get_gains(float yk1, float yk2, float yk3, float zk1, float zk2, float zk3);
     void get_target_pos(float yd, float zd);

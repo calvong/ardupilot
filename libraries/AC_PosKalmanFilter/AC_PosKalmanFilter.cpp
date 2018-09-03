@@ -70,7 +70,7 @@ void AC_PosKalmanFilter::run()
 
     _prev_data_set = _fs.data.pos.nset;
 
-    print_shit();
+    //print_shit();
 }
 
 vector<float> AC_PosKalmanFilter::_X_predict(vector<float> Xe, float ay, float az)
@@ -168,25 +168,26 @@ position_t AC_PosKalmanFilter::get_pos()
 
 void AC_PosKalmanFilter::print_shit()
 {
-    hal.uartA->printf("alt %f, pos_z %f\n", _fs.data.pos.alt, _pos.z);
+    hal.uartA->printf("pos_z %f, KF_z %f\n", _fs.data.pos.z, _pos.z);
 }
 
 void AC_PosKalmanFilter::write_log()
 {
     // write log to dataflash
     const Vector3f &accel = _ahrs.get_accel_ef_blended();
-    const Vector3f &velocity = _inav.get_velocity();
 
-    // accel z
-    double accel_z = accel.z/(_ahrs.cos_roll()*_ahrs.cos_pitch());
-
-    DataFlash_Class::instance()->Log_Write("PKF", "TimeUS,ALT,VELZ,ACCZ,ACCZF,NSET,POSZ",
-                                           "smno-m", "F00000", "Qfffif",
+    DataFlash_Class::instance()->Log_Write("PKF", "TimeUS,Y,Z,KFY,KFZ,VELY,VELZ,ACCY,ACCZ,NSET",
+                                           "smmmmnnoo-", "F000000000", "Qffffffffi",
                                            AP_HAL::micros64(),
-                                           (double) _fs.data.pos.alt,
-                                           (double) velocity.z,
-                                           (double) accel_z,
-                                           _fs.data.pos.nset,
-                                            _pos.z);
+                                           (double) _fs.data.pos.y,
+                                           (double) _fs.data.pos.z,
+                                           (double) _pos.y,
+                                           (double) _pos.z,
+                                           (double) _pos.vy,
+                                           (double) _pos.vz,
+                                           (double) accel.y,
+                                           (double) accel.z,
+                                           (int) _fs.data.pos.nset);
+
 
 }
