@@ -385,6 +385,7 @@ void Copter::ten_hz_logging_loop()
 void Copter::twentyfive_hz_logging()
 {
     pkf->write_log();
+    backstepping->write_log();
     
 #if HIL_MODE != HIL_MODE_DISABLED
     // HIL for a copter needs very fast update of the servo values
