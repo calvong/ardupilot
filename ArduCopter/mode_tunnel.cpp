@@ -48,7 +48,7 @@ void Copter::ModeTunnel::run()
 
     // call backstepping controller
     backstepping->get_target_pos(0, g.BS_altd); // TODO
-    backstepping->pos_update();
+    backstepping->pos_update(pkf->get_pos());
 
     backstepping->update_alt_controller();
 
@@ -56,6 +56,6 @@ void Copter::ModeTunnel::run()
     pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());
     pos_sensor.data.AC_alt_target = g.BS_altd;
 
-    pkf->write_log();
+    //pkf->write_log();
     //pkf->print_shit();
 }

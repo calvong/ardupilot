@@ -14,7 +14,7 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
     // init variables
     _imax_z = _motors.get_throttle_hover() * 0.2f;  // TEMP
     _pos_target_z = 0.5f; // 50 cm above ground
-    _dt = 0.025f;
+    _dt = 0.0025f;
     _mode_switch_counter = 0;
     _vel_error_filter.set_cutoff_frequency(BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ);
 
@@ -37,19 +37,16 @@ void AC_Backstepping::update_alt_controller()
 
     perr.ez = ez;   // log
 
-    // check if new data set is received
-    if (_prev_nset != _fs.data.pos.nset)
-    {
-        // d term with LPF
-        _pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
-        perr.dtermfil_z = _pos.vel_z_err;
+    // d term with LPF
+    _pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
+    perr.dtermfil_z = _pos.vel_z_err;
 
-        // i term
-        _pos.iez += ez * _dt;
+    // i term
+    _pos.iez += ez * _dt;
 
-        // update previous data
-        _prev_nset = _fs.data.pos.nset;
-    }
+    // update previous data
+    _prev_nset = _fs.data.pos.nset;
+
 
     _pos.prev_ez = ez;
 
@@ -126,10 +123,10 @@ void AC_Backstepping::debug_print()
     _loop_counter++;
 }
 
-void AC_Backstepping::pos_update()
+void AC_Backstepping::pos_update(position_t pos)
 {
-    _pos.y = _fs.data.pos.y;
-    _pos.z = _fs.data.pos.z;   
+    _pos.y = pos.y;
+    _pos.z = pos.z;
 }
 
 
