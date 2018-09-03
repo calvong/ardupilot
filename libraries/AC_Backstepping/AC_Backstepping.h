@@ -13,6 +13,7 @@
 #include "AP_FakeSensor/AP_FakeSensor.h"
 #include <RC_Channel/RC_Channel.h>
 #include <GCS_MAVLink/GCS.h>
+#include <DataFlash/DataFlash.h>
 
 #define G                                   -9.81f // gravity
 #define DEFAULT_IMAX                        10

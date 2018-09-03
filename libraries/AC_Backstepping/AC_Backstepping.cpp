@@ -52,7 +52,7 @@ void AC_Backstepping::update_alt_controller()
 
     // update d term
     float dterm_z = _pos.vel_z_err*(_gains.k2_z + _gains.k3_z);
-    perr.dterm_z = _pos.vel_z_err;  // log
+    perr.dterm_z = dterm_z;  // log
 
     // restrict integral
     float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
@@ -81,6 +81,22 @@ void AC_Backstepping::update_lateral_controller()
 
 void AC_Backstepping::write_log()
 {
+    // write log to dataflash
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,Y,Z,KFY,KFZ,VELY,VELZ,U1,THRH,EZ,I,D",
+                                           "smmmmnn-----", "F00000000000", "Qfffffffffff",
+                                           AP_HAL::micros64(),
+                                           (double) _fs.data.pos.y,
+                                           (double) _fs.data.pos.z,
+                                           (double) _pos.y,
+                                           (double) _pos.z,
+                                           (double) _pos.vy,
+                                           (double) _pos.vz,
+                                           (double) _u1,
+                                           (double) _motors.get_throttle_hover(),
+                                           (double) perr.ez,
+                                           (double) perr.iterm_z,
+                                           (double) perr.dterm_z);
+
 
 }
 
@@ -125,8 +141,7 @@ void AC_Backstepping::debug_print()
 
 void AC_Backstepping::pos_update(position_t pos)
 {
-    _pos.y = pos.y;
-    _pos.z = pos.z;
+    _pos = pos;
 }
 
 
