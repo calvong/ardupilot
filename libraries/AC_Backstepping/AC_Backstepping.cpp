@@ -91,8 +91,8 @@ void AC_Backstepping::update_lateral_controller()
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,Y,Z,KFY,KFZ,VELY,VELZ,U1,THRH,EZ,I,D",
-                                           "smmmmnn-----", "F00000000000", "Qfffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,Y,Z,KFY,KFZ,VELY,VELZ,U1,THRH,EZ,I,D,K1,K2,K3",
+                                           "smmmmnn--------", "F00000000000000", "Qffffffffffffff",
                                            AP_HAL::micros64(),
                                            (double) _fs.data.pos.y,
                                            (double) _fs.data.pos.z,
@@ -104,9 +104,10 @@ void AC_Backstepping::write_log()
                                            (double) _motors.get_throttle_hover(),
                                            (double) perr.ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z),
                                            (double) perr.iterm_z,
-                                           (double) _pos.vel_z_err*(_gains.k2_z + _gains.k3_z));
-
-
+                                           (double) _pos.vel_z_err*(_gains.k2_z + _gains.k3_z),
+                                           (double) _gains.k1_z,
+                                           (double) _gains.k2_z,
+                                           (double) _gains.k3_z);
 }
 
 void AC_Backstepping::reset_mode_switch()

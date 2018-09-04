@@ -35,7 +35,7 @@ void Copter::ModeTunnel::run()
     if (!motors->armed() || !motors->get_interlock())
     {
         backstepping->reset_integral();
-        backstepping->reset_mode_switch();    
+        backstepping->reset_mode_switch();
     }
 
     motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
@@ -48,6 +48,8 @@ void Copter::ModeTunnel::run()
     backstepping->pos_update(pkf->get_pos());
 
     backstepping->update_alt_controller();
+
+    backstepping->update_lateral_controller();
 
     // get control outputs
     pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());
