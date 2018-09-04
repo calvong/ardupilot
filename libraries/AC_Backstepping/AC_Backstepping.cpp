@@ -33,11 +33,11 @@ void AC_Backstepping::update_alt_controller()
     float ez = _pos_target_z - _pos.z;
 
     // discard crazy values
-    if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)
-    {
-        ez = _pos.prev_ez;
-        hal.uartA->printf("WTF? ");
-    }
+    //if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)
+    //{
+    //    ez = _pos.prev_ez;
+    //    hal.uartA->printf("WTF? ");
+    //}
 
 
     perr.ez = ez;   // log
@@ -63,18 +63,20 @@ void AC_Backstepping::update_alt_controller()
     float iterm_z = _gains.k1_z*_gains.k3_z*_pos.iez; //_limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
     perr.iterm_z = iterm_z;    // log
 
+    float thrHover = _motors.get_throttle_hover();
+
     // restrict derivative to be hover throttle at max
-    dterm_z = _limit_derivative(dterm_z, _motors.get_throttle_hover()*0.5f);
+    dterm_z = _limit_derivative(dterm_z, thrHover*0.5f);
 
     // compute u1
-    _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z + _motors.get_throttle_hover()) / (cphi*cthe);
+    _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z + thrHover) / (cphi*cthe);
 
     _thr_out = _limit_thrust(_u1);
 
     // mode transition throttle ramping, 0.5s
     if (!flags.mode_transition_completed)   _thr_out = _throttle_transition(_thr_out);
 
-    hal.uartA->printf("u1 %f, zd %f, z %f, ez %f, i %f, d %f, pez %f, abs %f\n", _u1, _pos_target_z, _pos.z, ez, iterm_z, dterm_z, _pos.prev_ez,fabs(ez - _pos.prev_ez));
+    //hal.uartA->printf("u1 %f, p %f, i %f, d %f, ThrH %f, z %f\n", _thr_out, ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z), iterm_z, dterm_z,_motors.get_throttle_hover(),_pos.z);
 
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
@@ -100,7 +102,7 @@ void AC_Backstepping::write_log()
                                            (double) _pos.vz,
                                            (double) _u1,
                                            (double) _motors.get_throttle_hover(),
-                                           (double) perr.ez,
+                                           (double) perr.ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z),
                                            (double) perr.iterm_z,
                                            (double) _pos.vel_z_err*(_gains.k2_z + _gains.k3_z));
 
@@ -135,6 +137,7 @@ float AC_Backstepping::_throttle_transition(float BS_thr_out)
         flags.mode_transition_completed = true;
         thr_out = BS_thr_out;
     }
+
 
     return thr_out;
 }

@@ -80,25 +80,13 @@ struct position_t
     float prev_ez = 0;    // previous pos z error
 
     float iey = 0;   // error integral of pos y
-    float iez = 0;   // error integral of pos z
+    float iez;   // error integral of pos z
 };
 
 struct FakeSensor_data_t
 {
-    /*
-        message structure:
-
-        $ start char
-        0 or 1 : is lidar healthy
-        + or - : sign of pos y
-        5 digits of y position
-        + or - : sign of pos z
-        5 digits of z position
-        + or - : sign of alt
-        5 digits of altitude
-        # end char
-    */
     position_t pos;
+    position_t KF_pos;
 
     // Pixhawk 2 info
     float roll;
@@ -135,6 +123,7 @@ public:
     void get_AHRS(AP_AHRS_View* ahrs);
     void get_motors(AP_MotorsMulticopter* motors);
     bool data_is_ok();
+    void get_KF_pos(position_t p);  // get kalman filter output;
 
     // get controller info
     void read_controller(pos_error_t perr, float u1);

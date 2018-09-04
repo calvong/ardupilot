@@ -15,12 +15,13 @@
 #include <GCS_MAVLink/GCS.h>
 #include <DataFlash/DataFlash.h>
 
-#define G                                   -9.81f // gravity
+#define G                                   -9.81f  // gravity
 #define DEFAULT_IMAX                        10
 #define BACKSTEPPING_THROTTLE_CUTOFF_FREQ   2.0f    // low-pass filter on accel error (unit: hz)
 #define BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ  5.0f
 #define THRUST_SCALE_FACTOR                 0.01f
-#define POS_ERROR_THRESHOLD                 1.0f    // in m, max allowed change in position
+#define POS_ERROR_THRESHOLD                 1.5f    // in m, max allowed change in position
+#define THROTTLE_TRANSITION_TIME            1.5f    // second
 
 class AC_Backstepping
 {

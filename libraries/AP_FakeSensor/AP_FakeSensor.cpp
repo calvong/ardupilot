@@ -126,32 +126,6 @@ void AP_FakeSensor::_get_pos()
         _flag_init = true;
 
     }
-
-/*
-    hal.uartA->printf(" bufL %d\n", _buflen);
-
-    for (int i=0; i<_buflen;i++)
-    {
-        if (_linebuf[i] == '$')
-        {
-            if ((_buflen - i) >= 16)
-            {
-                char temp[16];
-                for (int d=0;d<16;d++)
-                {
-                    temp[d] = _linebuf[i+d];
-                    i++;
-                }
-
-                int y = _byte2int(temp, 1) * 0.001f;
-                int z = (float) _byte2int(temp, 2) * 0.001f;
-                int nset = _byte2int(temp, 3);
-
-                hal.uartA->printf("y %d, z %d, n %d\n", y, z, nset);
-            }
-        }
-    }
-*/
 }
 
 
@@ -180,13 +154,8 @@ vector<unsigned char> AP_FakeSensor::_msg_encoder()
     result = _float2byte(result, _limit_thr(data.mthrust_out[1]));  // throttle avg max
     result = _float2byte(result, _limit_thr(data.mthrust_out[2]));  // throttle hover
     result = _float2byte(result, data.perr.ez);
-    result = _float2byte(result, data.perr.dterm_z);
     result = _float2byte(result, data.perr.iterm_z);
-    result = _float2byte(result, data.AC_alt_target);
-    result = _float2byte(result, data.AC_cr);
-    result = _float2byte(result, data.dist_err);
-    result = _float2byte(result, data.target_rangefinder_alt);
-    result = _float2byte(result, data.perr.dtermfil_z);
+    result = _float2byte(result, data.perr.dterm_z);
 
     return result;
 }
@@ -198,6 +167,11 @@ vector<unsigned char> AP_FakeSensor::_int2byte(vector<unsigned char> in, int val
     in.push_back(value >>  8);
     in.push_back(value      );
     return in;
+}
+
+void AP_FakeSensor::get_KF_pos(position_t p)
+{
+    data.KF_pos = p;
 }
 
 vector<unsigned char> AP_FakeSensor::_float2byte(vector<unsigned char> in, float value)

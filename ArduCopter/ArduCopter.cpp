@@ -231,6 +231,7 @@ void Copter::loop()
 void Copter::upate_posKF()
 {
     pkf->run();
+    pos_sensor.get_KF_pos(pkf->get_pos());
 }
 
 // Main loop - 400hz
@@ -386,7 +387,7 @@ void Copter::twentyfive_hz_logging()
 {
     pkf->write_log();
     backstepping->write_log();
-    
+
 #if HIL_MODE != HIL_MODE_DISABLED
     // HIL for a copter needs very fast update of the servo values
     gcs().send_message(MSG_SERVO_OUTPUT_RAW);
