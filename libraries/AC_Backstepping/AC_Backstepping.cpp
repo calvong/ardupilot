@@ -38,8 +38,8 @@ void AC_Backstepping::update_alt_controller()
     perr.ez = ez;   // log
 
     // d term with LPF
-    _pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
-    perr.dtermfil_z = _pos.vel_z_err;
+    //_pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
+    _pos.vel_z_err = _pos.vz; //(ez - _pos.prev_ez) / _dt; // TODO: need to add target velocity
 
     // i term
     _pos.iez += ez * _dt;
