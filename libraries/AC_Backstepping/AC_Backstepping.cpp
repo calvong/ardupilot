@@ -12,7 +12,7 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
                                  _fs(fs)
 {
     // init variables
-    _imax_z = _motors.get_throttle_hover() * 0.2f;  // TEMP
+    _imax_z = _motors.get_throttle_hover() * 0.5f;  // TEMP
     _pos_target_z = 0.5f; // 50 cm above ground
     _dt = 0.0025f;
     _mode_switch_counter = 0;
@@ -33,13 +33,18 @@ void AC_Backstepping::update_alt_controller()
     float ez = _pos_target_z - _pos.z;
 
     // discard crazy values
-    if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)   ez = _pos.prev_ez;
+    if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)
+    {
+        ez = _pos.prev_ez;
+        hal.uartA->printf("WTF? ");
+    }
+
 
     perr.ez = ez;   // log
 
     // d term with LPF
     //_pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
-    _pos.vel_z_err = _pos.vz; //(ez - _pos.prev_ez) / _dt; // TODO: need to add target velocity
+    _pos.vel_z_err = -_pos.vz; //(ez - _pos.prev_ez) / _dt; // TODO: need to add target velocity
 
     // i term
     _pos.iez += ez * _dt;
@@ -55,11 +60,11 @@ void AC_Backstepping::update_alt_controller()
     perr.dterm_z = dterm_z;  // log
 
     // restrict integral
-    float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
-    perr.iterm_z = _pos.iez;    // log
+    float iterm_z = _gains.k1_z*_gains.k3_z*_pos.iez; //_limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
+    perr.iterm_z = iterm_z;    // log
 
     // restrict derivative to be hover throttle at max
-    dterm_z = _limit_derivative(dterm_z, _motors.get_throttle_hover()*0.3f);
+    dterm_z = _limit_derivative(dterm_z, _motors.get_throttle_hover()*0.5f);
 
     // compute u1
     _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z + _motors.get_throttle_hover()) / (cphi*cthe);
@@ -69,7 +74,7 @@ void AC_Backstepping::update_alt_controller()
     // mode transition throttle ramping, 0.5s
     if (!flags.mode_transition_completed)   _thr_out = _throttle_transition(_thr_out);
 
-    //hal.uartA->printf("u1 %f, thrH %f, y %f, z%f\n", _u1, _motors.get_throttle_hover(), _pos.y*1000.0f, _pos.z*1000.0f);
+    hal.uartA->printf("u1 %f, zd %f, z %f, ez %f, i %f, d %f, pez %f, abs %f\n", _u1, _pos_target_z, _pos.z, ez, iterm_z, dterm_z, _pos.prev_ez,fabs(ez - _pos.prev_ez));
 
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
@@ -97,7 +102,7 @@ void AC_Backstepping::write_log()
                                            (double) _motors.get_throttle_hover(),
                                            (double) perr.ez,
                                            (double) perr.iterm_z,
-                                           (double) perr.dterm_z);
+                                           (double) _pos.vel_z_err*(_gains.k2_z + _gains.k3_z));
 
 
 }
@@ -117,9 +122,12 @@ float AC_Backstepping::_throttle_transition(float BS_thr_out)
 
     flags.switched_mode = true;
 
-    if (_mode_switch_counter < 200)
+    float switch_time = (float) 400.0f*THROTTLE_TRANSITION_TIME;
+
+    // 400 counts = 1s
+    if (_mode_switch_counter < switch_time)
     {
-        thr_out = (200.0f - _mode_switch_counter)*_last_mode_thr_out/200.0f + _mode_switch_counter*BS_thr_out/200.0f;
+        thr_out = (switch_time - _mode_switch_counter)*_last_mode_thr_out/switch_time + _mode_switch_counter*BS_thr_out/switch_time;
         _mode_switch_counter++;
     }
     else
@@ -143,7 +151,10 @@ void AC_Backstepping::debug_print()
 
 void AC_Backstepping::pos_update(position_t pos)
 {
-    _pos = pos;
+    _pos.y  = pos.y;
+    _pos.vy = pos.vy;
+    _pos.z  = pos.z;
+    _pos.vz = pos.vz;
 }
 
 
