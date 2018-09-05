@@ -91,8 +91,10 @@ private:
     float _mode_switch_counter;
     float _thr_out;    // thrust output for motor, range from 0-1
     float _u1;               // thrust: raw controller output from altitude controller
-    float _target_roll;     // desired roll output from lateral controller
-
+    float _target_roll;     // desired roll to the attitude controller
+    float _pilot_roll;      // pilot roll input
+    float _BS_roll;         // desired roll output from backstepping
+    
     float _angle_transition(float target_roll);
     float _throttle_transition(float BS_thr_out);
     float _limit_derivative(float d_term, float threshold);

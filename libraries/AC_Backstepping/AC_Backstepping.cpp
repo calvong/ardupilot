@@ -37,8 +37,8 @@ void AC_Backstepping::update_alt_controller()
 
     // discard crazy values
     //if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)
-    //{
-    //    ez = _pos.prev_ez;
+    //{float target_rollfloat target_rollfloat target_rollfloat target_roll
+    //    ez = _pos.prev_ez;float target_roll
     //    hal.uartA->printf("WTF? ");
     //}
 
@@ -88,20 +88,27 @@ void AC_Backstepping::update_alt_controller()
 
 void AC_Backstepping::update_lateral_controller()
 {
+    
+    _BS_roll = -1/_u1;
 
+    // check for manual override
+    if (!flags.manual_override)   _target_roll = _angle_transition(_BS_roll);
+    else                    _target_roll = _pilot_roll;
+
+    hal.uartA->printf("out %f\n", _target_roll);
 }
 
-float _angle_transition(float target_roll)
+float AC_Backstepping::_angle_transition(float target_roll)
 {
-    if (_manual_counter)
+    if (_manual_counter > 0)
     {
-        float roll_out = 
+        float roll_out = (1- (float) _manual_counter/(MANUAL_OVERRIDE_TIME/_dt)) * target_roll;
 
         _manual_counter--;
 
         return roll_out;
     }
-    else if (_manual_counter <= 0)
+    else
     {
         return target_roll;
     }
@@ -109,6 +116,8 @@ float _angle_transition(float target_roll)
 
 void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_max)
 {
+    _pilot_roll = target_roll;
+
     if (fabs(target_roll) > 0.1*roll_max)
     {
         flags.manual_override = true;
