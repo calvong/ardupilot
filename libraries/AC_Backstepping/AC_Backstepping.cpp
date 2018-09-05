@@ -16,11 +16,14 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
     _pos_target_z = 0.5f; // 50 cm above ground
     _dt = 0.0025f;
     _mode_switch_counter = 0;
+    _manual_counter = 0;
     _vel_error_filter.set_cutoff_frequency(BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ);
 
     // init flags
     flags.switched_mode = false;
     flags.mode_transition_completed = false;
+    flags.manual_override = false;
+
     //hal.uartA->begin(115200); // debug
 }
 
@@ -85,6 +88,36 @@ void AC_Backstepping::update_alt_controller()
 
 void AC_Backstepping::update_lateral_controller()
 {
+
+}
+
+float _angle_transition(float target_roll)
+{
+    if (_manual_counter)
+    {
+        float roll_out = 
+
+        _manual_counter--;
+
+        return roll_out;
+    }
+    else if (_manual_counter <= 0)
+    {
+        return target_roll;
+    }
+}
+
+void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_max)
+{
+    if (fabs(target_roll) > 0.1*roll_max)
+    {
+        flags.manual_override = true;
+        _manual_counter = (int) MANUAL_OVERRIDE_TIME/_dt;
+    }
+    else
+    {
+        flags.manual_override = false;
+    }
 
 }
 

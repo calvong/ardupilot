@@ -22,6 +22,7 @@
 #define THRUST_SCALE_FACTOR                 0.01f
 #define POS_ERROR_THRESHOLD                 1.5f    // in m, max allowed change in position
 #define THROTTLE_TRANSITION_TIME            1.5f    // second
+#define MANUAL_OVERRIDE_TIME                1.5f    // second
 
 class AC_Backstepping
 {
@@ -29,10 +30,9 @@ public:
     // variables
     struct backstepping_flags
     {
-        bool pilot_override;
-        bool reset_integral;
         bool switched_mode;
         bool mode_transition_completed;
+        bool manual_override;
     }flags;
 
     pos_error_t perr;
@@ -47,6 +47,7 @@ public:
     void get_imax(float imax_y, float imax_z);
     void get_gains(float yk1, float yk2, float yk3, float zk1, float zk2, float zk3);
     void get_target_pos(float yd, float zd);
+    void get_pilot_lean_angle_input(float target_roll, float roll_max);
     float get_u1();
 
     void update_alt_controller();
@@ -76,6 +77,8 @@ private:
 
     position_t _pos;
 
+    int _manual_counter;
+
     float _dt;
     float _pos_target_z;
     float _pos_target_y;
@@ -90,6 +93,7 @@ private:
     float _u1;               // thrust: raw controller output from altitude controller
     float _target_roll;     // desired roll output from lateral controller
 
+    float _angle_transition(float target_roll);
     float _throttle_transition(float BS_thr_out);
     float _limit_derivative(float d_term, float threshold);
     float _limit_integral(float gain, float current_err, char yz);
