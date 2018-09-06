@@ -57,9 +57,6 @@ void AC_Backstepping::update_alt_controller()
     // i term
     _pos.iez += ez * _dt;
 
-    // update previous data
-    _prev_nset = _fs.data.pos.nset;
-
     _pos.prev_ez = ez;
 
     // update d term
@@ -169,11 +166,9 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,Y,Z,KFY,KFZ,VELY,VELZ,U1,BSROLL,OUTROLL,THRH,PY,IY,DY,PZ,IZ,DZ,KZ1,KZ2,KZ3,KY1,KY2,KY3",
-                                           "smmmmnn----------------", "F0000000000000000000000", "Qffffffffffffffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,OUTROLL,THRH,PY,IY,DY,PZ,IZ,DZ",
+                                           "smmmmnn--------", "F00000000000000", "Qffffffffffffff",
                                            AP_HAL::micros64(),
-                                           (double) _fs.data.pos.y,
-                                           (double) _fs.data.pos.z,
                                            (double) _pos.y,
                                            (double) _pos.z,
                                            (double) _pos.vy,
@@ -187,13 +182,7 @@ void AC_Backstepping::write_log()
                                            (double) perr.dterm_y,
                                            (double) perr.ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z),
                                            (double) perr.iterm_z,
-                                           (double) _pos.vel_z_err*(_gains.k2_z + _gains.k3_z),
-                                           (double) _gains.k1_z,
-                                           (double) _gains.k2_z,
-                                           (double) _gains.k3_z,
-                                           (double) _gains.k1_y,
-                                           (double) _gains.k2_y,
-                                           (double) _gains.k3_y);
+                                           (double) _pos.vel_z_err*(_gains.k2_z + _gains.k3_z));
 }
 
 void AC_Backstepping::reset_mode_switch()
