@@ -78,9 +78,11 @@ const AP_Param::Info Copter::var_info[] = {
     // @DisplayName: gain k1_z for backstepping controller
     GSCALAR(BS_imax_z, "BS_imax_z",   10),
 
-    // @Param:Backstepping_alt_desired
-    // @DisplayName: gain k1_z for backstepping controller
-    GSCALAR(BS_altd, "BS_altd",   0.5),
+    // @Param:Backstepping_pos_z_desired
+    GSCALAR(BS_zd, "BS_zd",   0.5),
+
+    // @Param:Backstepping_pos_z_desired
+    GSCALAR(BS_yd, "BS_yd",   0),
 
     // @Param: SYSID_SW_MREV
     // @DisplayName: Eeprom format version number

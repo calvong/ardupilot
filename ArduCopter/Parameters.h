@@ -378,7 +378,8 @@ public:
         k_param_BS_imax_z,
         k_param_BS_imax_y,
 
-        k_param_BS_altd,
+        k_param_BS_yd,
+        k_param_BS_zd,
         // the k_param_* space is 9-bits in size
         // 511: reserved
     };
@@ -405,7 +406,8 @@ public:
     AP_Float BS_imax_z;
     AP_Float BS_imax_y;
 
-    AP_Float BS_altd;
+    AP_Float BS_yd;
+    AP_Float BS_zd;
     // Telemetry control
     //
     AP_Int16        sysid_this_mav;
