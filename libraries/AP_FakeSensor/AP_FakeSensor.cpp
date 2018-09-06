@@ -245,3 +245,15 @@ float AP_FakeSensor::_byte2float(char* buffer, int position)
 
     return f.num;
 }
+
+void AP_FakeSensor::write_log()
+{
+    // write log to dataflash
+    DataFlash_Class::instance()->Log_Write("FAKE", "TimeUS,ALTD,CR,eDIST,RNGALT",
+                                           "smmmm", "F0000", "Qffff",
+                                           AP_HAL::micros64(),
+                                           (double) data.AC_alt_target,
+                                           (double) data.AC_cr,
+                                           (double) data.dist_err,
+                                           (double) data.target_rangefinder_alt);
+}

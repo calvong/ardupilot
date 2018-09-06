@@ -126,7 +126,8 @@ public:
     void get_motors(AP_MotorsMulticopter* motors);
     bool data_is_ok();
     void get_KF_pos(position_t p);  // get kalman filter output;
-
+    void write_log();
+    
     // get controller info
     void read_controller(pos_error_t perr, float u1);
 
