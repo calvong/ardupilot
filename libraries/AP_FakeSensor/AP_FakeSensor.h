@@ -57,9 +57,11 @@ struct rc_channel_t
 // control output
 struct pos_error_t
 {
+    float ey;
+    float dterm_y;
+    float iterm_y;
     float ez;
     float dterm_z;
-    float dtermfil_z; // filtered d
     float iterm_z;
 };
 

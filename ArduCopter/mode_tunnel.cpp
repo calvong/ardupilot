@@ -42,16 +42,16 @@ void Copter::ModeTunnel::run()
 
     motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
 
-    // call attitude controller
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
-
     // call backstepping controller
-    backstepping->get_target_pos(0, g.BS_altd); // TODO
+    backstepping->get_target_pos(g.BS_yd, g.BS_zd); // TODO: receive from path planning?
     backstepping->pos_update(pkf->get_pos());
 
     backstepping->update_alt_controller();
 
-    backstepping->update_lateral_controller();
+    target_roll = backstepping->update_lateral_controller();
+
+    // call attitude controller
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 
     // get control outputs
     pos_sensor.read_controller(backstepping->perr, backstepping->get_u1());

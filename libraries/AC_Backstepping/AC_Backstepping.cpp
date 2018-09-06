@@ -13,10 +13,15 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
 {
     // init variables
     _imax_z = _motors.get_throttle_hover() * 0.5f;  // TEMP
+    _imax_y = sin(10 *M_PI/180.0f) / 0.36;  // 10 deg -> max roll angle for pos y integral
+
     _pos_target_z = 0.5f; // 50 cm above ground
+
     _dt = 0.0025f;
+
     _mode_switch_counter = 0;
     _manual_counter = 0;
+
     _vel_error_filter.set_cutoff_frequency(BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ);
 
     // init flags
@@ -55,7 +60,6 @@ void AC_Backstepping::update_alt_controller()
     // update previous data
     _prev_nset = _fs.data.pos.nset;
 
-
     _pos.prev_ez = ez;
 
     // update d term
@@ -63,7 +67,7 @@ void AC_Backstepping::update_alt_controller()
     perr.dterm_z = dterm_z;  // log
 
     // restrict integral
-    float iterm_z = _gains.k1_z*_gains.k3_z*_pos.iez; //_limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
+    float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
     perr.iterm_z = iterm_z;    // log
 
     float thrHover = _motors.get_throttle_hover();
@@ -86,16 +90,47 @@ void AC_Backstepping::update_alt_controller()
     _attitude_control.set_throttle_out(_thr_out, false, BACKSTEPPING_THROTTLE_CUTOFF_FREQ);
 }
 
-void AC_Backstepping::update_lateral_controller()
+float AC_Backstepping::update_lateral_controller()
 {
-    
-    _BS_roll = -1/_u1;
+    // position error
+    float ey = _pos_target_y - _pos.y;
+
+    perr.ey = ey;   // log
+
+    // d term
+    _pos.vel_y_err = -_pos.vy;  // TODO: need to add target velocity
+
+    // i term
+    _pos.iey += ey * _dt;
+
+    _pos.prev_ey = ey;
+
+    // update d term
+    float dterm_y = _pos.vel_y_err*(_gains.k2_y + _gains.k3_y);
+
+    // restrict derivative to be hover throttle at max
+    dterm_y = _limit_derivative(dterm_y, ROLL_DTERM_MAX);
+
+    perr.dterm_y = dterm_y;  // log
+
+    // restrict integral
+    float iterm_y = _limit_integral(_gains.k1_y*_gains.k3_y, ey, 'y');
+    perr.iterm_y = iterm_y;    // log
+
+    float sin_phi = _limit_sin_phi( ((_gains.k1_y + _gains.k2_y*_gains.k3_y)*ey + iterm_y + dterm_y) / _u1 );
+
+    _BS_roll = asin(sin_phi);
+
+    // convert from radian to centidegrees for attitude controller
+    _BS_roll = _rad2cdeg(_BS_roll);
 
     // check for manual override
     if (!flags.manual_override)   _target_roll = _angle_transition(_BS_roll);
-    else                    _target_roll = _pilot_roll;
+    else                          _target_roll = _pilot_roll;
 
-    hal.uartA->printf("out %f\n", _target_roll);
+    hal.uartA->printf("tar %f, p %f, i %f, iey %f, iez %f\n", _target_roll,(_gains.k1_y + _gains.k2_y*_gains.k3_y)* ey, iterm_y, _pos.iey, _pos.iez);
+
+    return _target_roll;
 }
 
 float AC_Backstepping::_angle_transition(float target_roll)
@@ -116,7 +151,9 @@ float AC_Backstepping::_angle_transition(float target_roll)
 
 void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_max)
 {
+    // in centidegrees
     _pilot_roll = target_roll;
+    _roll_max = roll_max;
 
     if (fabs(target_roll) > 0.1*roll_max)
     {
@@ -127,14 +164,13 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
     {
         flags.manual_override = false;
     }
-
 }
 
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,Y,Z,KFY,KFZ,VELY,VELZ,U1,THRH,EZ,I,D,K1,K2,K3",
-                                           "smmmmnn--------", "F00000000000000", "Qffffffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,Y,Z,KFY,KFZ,VELY,VELZ,U1,BSROLL,OUTROLL,THRH,PY,IY,DY,PZ,IZ,DZ,KZ1,KZ2,KZ3,KY1,KY2,KY3",
+                                           "smmmmnn----------------", "F0000000000000000000000", "Qffffffffffffffffffffff",
                                            AP_HAL::micros64(),
                                            (double) _fs.data.pos.y,
                                            (double) _fs.data.pos.z,
@@ -143,13 +179,21 @@ void AC_Backstepping::write_log()
                                            (double) _pos.vy,
                                            (double) _pos.vz,
                                            (double) _u1,
+                                           (double) _BS_roll,
+                                           (double) _target_roll,
                                            (double) _motors.get_throttle_hover(),
+                                           (double) perr.ey*(_gains.k1_y + _gains.k2_y*_gains.k3_y),
+                                           (double) perr.iterm_y,
+                                           (double) perr.dterm_y,
                                            (double) perr.ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z),
                                            (double) perr.iterm_z,
                                            (double) _pos.vel_z_err*(_gains.k2_z + _gains.k3_z),
                                            (double) _gains.k1_z,
                                            (double) _gains.k2_z,
-                                           (double) _gains.k3_z);
+                                           (double) _gains.k3_z,
+                                           (double) _gains.k1_y,
+                                           (double) _gains.k2_y,
+                                           (double) _gains.k3_y);
 }
 
 void AC_Backstepping::reset_mode_switch()
@@ -210,11 +254,6 @@ void AC_Backstepping::get_target_pos(float yd, float zd)
     _pos_target_z = zd;
 }
 
-void AC_Backstepping::set_dt(float delta_sec)
-{
-    _dt = 0.025f;//delta_sec;
-}
-
 void AC_Backstepping::get_gains(float yk1, float yk2, float yk3, float zk1, float zk2, float zk3)
 {
     _gains.k1_y = yk1;
@@ -243,6 +282,15 @@ float AC_Backstepping::_limit_derivative(float d_term, float threshold)
     if (d_term > threshold)         return threshold;
     else if (d_term < -threshold)   return -threshold;
     else                            return d_term;
+}
+
+float AC_Backstepping::_limit_sin_phi(float sp)
+{
+    float sp_max = sin(_roll_max*M_PI/180.0f*0.01f); // convert from centidegree to radian
+
+    if (sp > sp_max)         return sp_max;
+    else if (sp < -sp_max)   return -sp_max;
+    else                     return sp;
 }
 
 float AC_Backstepping::_limit_integral(float gain, float current_err, char yz)
@@ -285,6 +333,11 @@ float AC_Backstepping::_limit_integral(float gain, float current_err, char yz)
     }
 
     return out;
+}
+
+float AC_Backstepping::_rad2cdeg(float in)
+{
+    return in*180/M_PI*100.0f;
 }
 
 float AC_Backstepping::get_u1()

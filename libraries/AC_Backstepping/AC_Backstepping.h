@@ -23,6 +23,7 @@
 #define POS_ERROR_THRESHOLD                 1.5f    // in m, max allowed change in position
 #define THROTTLE_TRANSITION_TIME            1.5f    // second
 #define MANUAL_OVERRIDE_TIME                1.5f    // second
+#define ROLL_DTERM_MAX                      sin(20*M_PI/180.0f)/0.36    // about 20 deg of d term
 
 class AC_Backstepping
 {
@@ -42,7 +43,6 @@ public:
                     const AP_Motors& motors, AC_AttitudeControl& attitude_control,
                     const AP_FakeSensor& fs);
 
-    void set_dt(float delta_sec);
     void pos_update(position_t pos);
     void get_imax(float imax_y, float imax_z);
     void get_gains(float yk1, float yk2, float yk3, float zk1, float zk2, float zk3);
@@ -51,7 +51,7 @@ public:
     float get_u1();
 
     void update_alt_controller();
-    void update_lateral_controller();
+    float update_lateral_controller();
     void reset_integral();
     void reset_mode_switch();
     void debug_print();
@@ -94,12 +94,15 @@ private:
     float _target_roll;     // desired roll to the attitude controller
     float _pilot_roll;      // pilot roll input
     float _BS_roll;         // desired roll output from backstepping
-    
+    float _roll_max;        // max roll angle
+
     float _angle_transition(float target_roll);
     float _throttle_transition(float BS_thr_out);
     float _limit_derivative(float d_term, float threshold);
     float _limit_integral(float gain, float current_err, char yz);
     float _limit_thrust(float thr);
+    float _limit_sin_phi(float sp);
+    float _rad2cdeg(float in);
 
     unsigned int _loop_counter = 0; // TEMP
 
