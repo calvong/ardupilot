@@ -22,8 +22,6 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
     _mode_switch_counter = 0;
     _manual_counter = 0;
 
-    _vel_error_filter.set_cutoff_frequency(BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ);
-
     // init flags
     flags.switched_mode = false;
     flags.mode_transition_completed = false;
@@ -50,8 +48,7 @@ void AC_Backstepping::update_alt_controller()
 
     perr.ez = ez;   // log
 
-    // d term with LPF
-    //_pos.vel_z_err = _vel_error_filter.apply((ez - _pos.prev_ez) / _dt, _dt);
+    // d term 
     _pos.vel_z_err = -_pos.vz; //(ez - _pos.prev_ez) / _dt; // TODO: need to add target velocity
 
     // i term
@@ -125,7 +122,7 @@ float AC_Backstepping::update_lateral_controller()
     if (!flags.manual_override)   _target_roll = _angle_transition(_BS_roll);
     else                          _target_roll = _pilot_roll;
 
-    hal.uartA->printf("tar %f, p %f, i %f, iey %f, iez %f\n", _target_roll,(_gains.k1_y + _gains.k2_y*_gains.k3_y)* ey, iterm_y, _pos.iey, _pos.iez);
+    //hal.uartA->printf("tar %f, p %f, i %f, iey %f, iez %f\n", _target_roll,(_gains.k1_y + _gains.k2_y*_gains.k3_y)* ey, iterm_y, _pos.iey, _pos.iez);
 
     return _target_roll;
 }
@@ -216,16 +213,6 @@ float AC_Backstepping::_throttle_transition(float BS_thr_out)
 
 
     return thr_out;
-}
-
-void AC_Backstepping::debug_print()
-{
-    if (_loop_counter >= 100)
-    {
-        gcs().send_text(MAV_SEVERITY_INFO, "vel %f, u1 %f, thrO %f, ez %f\n", _inav.get_velocity_z(), _u1, _thr_out, perr.ez);
-        _loop_counter = 0;
-    }
-    _loop_counter++;
 }
 
 void AC_Backstepping::pos_update(position_t pos)

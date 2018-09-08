@@ -54,7 +54,6 @@ public:
     float update_lateral_controller();
     void reset_integral();
     void reset_mode_switch();
-    void debug_print();
     void write_log();
 
 private:
@@ -104,7 +103,4 @@ private:
     float _limit_sin_phi(float sp);
     float _rad2cdeg(float in);
 
-    unsigned int _loop_counter = 0; // TEMP
-
-    LowPassFilterFloat _vel_error_filter;
 };

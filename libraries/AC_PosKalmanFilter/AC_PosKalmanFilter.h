@@ -33,7 +33,6 @@ private:
     const AP_AHRS_View &        _ahrs;
     const AP_InertialNav&       _inav;
     const AP_FakeSensor&        _fs;
-    const AP_InertialSensor&    _ins;
 
     vector<float> _Xp;  // state prediction
     vector<float> _Xe;  // state estimate
