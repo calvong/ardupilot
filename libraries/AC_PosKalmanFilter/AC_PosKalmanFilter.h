@@ -12,8 +12,8 @@
 #define POS_FILTER_CUTOFF_FREQ  2.0f
 #define R                       0.0025f     // measurement noise cov
 #define Q                       0.0225f     // process noise cov
-#define dt_KF                   0.0025f         // @400Hz
-#define dt_KF2                  0.0025f*0.0025f // dt^2
+//#define dt_KF                   0.005f         // @400Hz
+//#define dt_KF2                  dt_KF*dt_KF // dt^2
 #define G_KF                    9.81f        // gravity for kalman filter
 
 class AC_PosKalmanFilter
@@ -33,12 +33,17 @@ private:
     const AP_AHRS_View &        _ahrs;
     const AP_InertialNav&       _inav;
     const AP_FakeSensor&        _fs;
+    const AP_InertialSensor&    _ins;
 
     vector<float> _Xp;  // state prediction
     vector<float> _Xe;  // state estimate
     vector<float> _Pp;  // error covariance prediction
     vector<float> _Pe;   // error covariance estimate
     vector<float> _K;   // Kalman gain
+
+    float dt_KF;
+    float dt_KF2;
+    uint64_t t0;
 
     position_t _pos;
 

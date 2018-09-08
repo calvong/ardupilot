@@ -12,6 +12,9 @@ AC_PosKalmanFilter::AC_PosKalmanFilter(const AP_AHRS_View& ahrs,
     hal.uartA->begin(115200); // debug
 
     _init();
+
+    dt_KF = 0.0025f;
+    dt_KF2 = dt_KF*dt_KF;
 }
 
 void AC_PosKalmanFilter::_init()
@@ -42,6 +45,9 @@ void AC_PosKalmanFilter::_init()
 
 void AC_PosKalmanFilter::run()
 {
+    dt_KF = (float) (AP_HAL::micros64()-t0)*0.001f*0.001f;
+    dt_KF2 = dt_KF*dt_KF;
+
     // get accelerations
     const Vector3f &accel = _ahrs.get_accel_ef_blended();
     float ay = accel.y;
@@ -70,6 +76,7 @@ void AC_PosKalmanFilter::run()
 
     _prev_data_set = _fs.data.pos.nset;
 
+    t0 = AP_HAL::micros64();
     //print_shit();
 }
 
@@ -188,6 +195,4 @@ void AC_PosKalmanFilter::write_log()
                                            (double) accel.y,
                                            (double) accel.z,
                                            (int) _fs.data.pos.nset);
-
-
 }

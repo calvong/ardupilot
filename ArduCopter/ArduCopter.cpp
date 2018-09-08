@@ -90,7 +90,6 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(update_optical_flow,  200,    160),
 #endif
     SCHED_TASK(read_FakeSensor,      100,    200),
-    SCHED_TASK(upate_posKF,          400,     50),
     SCHED_TASK(update_batt_compass,   10,    120),
     SCHED_TASK(read_aux_all,          10,     50),
     SCHED_TASK(arm_motors_check,      10,     50),
@@ -228,12 +227,6 @@ void Copter::loop()
     G_Dt = scheduler.get_last_loop_time_s();
 }
 
-void Copter::upate_posKF()
-{
-    pkf->run();
-    pos_sensor.get_KF_pos(pkf->get_pos());
-}
-
 // Main loop - 400hz
 void Copter::fast_loop()
 {
@@ -274,6 +267,9 @@ void Copter::fast_loop()
     // camera mount's fast update
     camera_mount.update_fast();
 #endif
+
+    pkf->run();
+    pos_sensor.get_KF_pos(pkf->get_pos());
 
     // log sensor health
     if (should_log(MASK_LOG_ANY)) {
@@ -388,7 +384,7 @@ void Copter::twentyfive_hz_logging()
     pkf->write_log();
     backstepping->write_log();
     pos_sensor.write_log();
-    
+
 #if HIL_MODE != HIL_MODE_DISABLED
     // HIL for a copter needs very fast update of the servo values
     gcs().send_message(MSG_SERVO_OUTPUT_RAW);
