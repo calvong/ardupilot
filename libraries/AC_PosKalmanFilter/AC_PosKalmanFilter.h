@@ -12,8 +12,6 @@
 #define POS_FILTER_CUTOFF_FREQ  2.0f
 #define R                       0.0025f     // measurement noise cov
 #define Q                       0.0225f     // process noise cov
-//#define dt_KF                   0.005f         // @400Hz
-//#define dt_KF2                  dt_KF*dt_KF // dt^2
 #define G_KF                    9.81f        // gravity for kalman filter
 
 class AC_PosKalmanFilter

@@ -55,7 +55,7 @@ void AP_FakeSensor::update()
     msg = _msg_encoder();
     _msg_sender(msg);
 
-    //gcs().send_text(MAV_SEVERITY_INFO, "RC %d ", data.ch.roll);
+    //hal.uartA->printf("dist_err %f, rng_alt %f\n", data.dist_err, data.target_rangefinder_alt);
 }
 
 void AP_FakeSensor::read_controller(pos_error_t perr, float u1)

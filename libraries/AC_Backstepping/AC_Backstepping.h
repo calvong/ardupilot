@@ -23,7 +23,7 @@
 #define POS_ERROR_THRESHOLD                 1.5f    // in m, max allowed change in position
 #define THROTTLE_TRANSITION_TIME            1.5f    // second
 #define MANUAL_OVERRIDE_TIME                1.5f    // second
-#define ROLL_DTERM_MAX                      sin(20*M_PI/180.0f)/0.36    // about 20 deg of d term
+#define ROLL_DTERM_MAX                      sin(30*M_PI/180.0f)*0.36    // about 20 deg of d term
 
 class AC_Backstepping
 {

@@ -13,7 +13,7 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
 {
     // init variables
     _imax_z = _motors.get_throttle_hover() * 0.5f;  // TEMP
-    _imax_y = sin(10 *M_PI/180.0f) / 0.36;  // 10 deg -> max roll angle for pos y integral
+    _imax_y = sin(10 *M_PI/180.0f) * 0.36;  // 10 deg -> max roll angle for pos y integral
 
     _pos_target_z = 0.5f; // 50 cm above ground
 
@@ -38,17 +38,11 @@ void AC_Backstepping::update_alt_controller()
     // position error
     float ez = _pos_target_z - _pos.z;
 
-    // discard crazy values
-    //if (fabs(ez - _pos.prev_ez) > POS_ERROR_THRESHOLD)
-    //{float target_rollfloat target_rollfloat target_rollfloat target_roll
-    //    ez = _pos.prev_ez;float target_roll
-    //    hal.uartA->printf("WTF? ");
-    //}
-
+    //TODO: discard crazy values
 
     perr.ez = ez;   // log
 
-    // d term 
+    // d term
     _pos.vel_z_err = -_pos.vz; //(ez - _pos.prev_ez) / _dt; // TODO: need to add target velocity
 
     // i term
