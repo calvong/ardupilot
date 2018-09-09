@@ -564,9 +564,9 @@ float Copter::Mode::get_surface_tracking_climb_rate(int16_t target_rate, float c
     return copter.get_surface_tracking_climb_rate(target_rate, current_alt_target, dt);
 }
 
-float Copter::Mode::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_rate, float current_alt_target, float dt, float* dist_err, float* target_rngfndr_alt)
+float Copter::Mode::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_rate, float current_alt_target, float dt)
 {
-    return copter.get_surface_tracking_climb_rate_with_Hokuyo_lidar(target_rate, current_alt_target, dt, dist_err, target_rngfndr_alt);
+    return copter.get_surface_tracking_climb_rate_with_Hokuyo_lidar(target_rate, current_alt_target, dt);
 }
 
 float Copter::Mode::get_pilot_desired_yaw_rate(int16_t stick_angle)

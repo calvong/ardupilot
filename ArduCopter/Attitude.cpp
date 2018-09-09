@@ -1,5 +1,7 @@
 #include "Copter.h"
 
+extern const AP_HAL::HAL &hal;
+
 // get_pilot_desired_heading - transform pilot's yaw input into a
 // desired yaw rate
 // returns desired yaw rate in centi-degrees per second
@@ -228,18 +230,11 @@ float Copter::get_surface_tracking_climb_rate(int16_t target_rate, float current
 
 // get_surface_tracking_climb_rate - hold copter at the desired distance above the ground with the Hokuyo lidar
 //      returns climb rate (in cm/s) which should be passed to the position controller
-float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_rate, float current_alt_target, float dt, float* dist_err, float* target_rngfndr_alt)
+float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_rate, float current_alt_target, float dt)
 {
-
-    if (!pos_sensor.data_is_ok()) {
-        // if rangefinder is not ok, do not use surface tracking
-        return target_rate;
-    }
-
     static uint32_t last_call_ms = 0;
     float distance_error;
     float velocity_correction;
-    float current_alt = inertial_nav.get_altitude();
 
     uint32_t now = millis();
 
@@ -247,7 +242,7 @@ float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_r
 
     // reset target altitude if this controller has just been engaged
     if (now - last_call_ms > RANGEFINDER_TIMEOUT_MS) {
-        target_rangefinder_alt = pos_sensor.data.pos.z*100.0f + current_alt_target - current_alt;
+        target_rangefinder_alt = pos_sensor.data.pos.z*100.0f;
     }
     last_call_ms = now;
 
@@ -256,14 +251,12 @@ float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_r
         target_rangefinder_alt += target_rate * dt;
     }
 
-    int gain = 1;
     // calc desired velocity correction from target rangefinder alt vs actual rangefinder alt (remove the error already passed to Altitude controller to avoid oscillations)
-    distance_error = (target_rangefinder_alt - pos_sensor.data.pos.z*100.0f) - (current_alt_target - current_alt);
-    velocity_correction = distance_error * gain;
+    distance_error = (target_rangefinder_alt -  pos_sensor.data.pos.z*100.0f);
+    velocity_correction = distance_error * g.alt_hold_p;
     velocity_correction = constrain_float(velocity_correction, -THR_SURFACE_TRACKING_VELZ_MAX, THR_SURFACE_TRACKING_VELZ_MAX);
 
-    dist_err = &distance_error;
-    target_rngfndr_alt = &target_rangefinder_alt;
+    //hal.uartA->printf("derr %f, cr %d, cAltTar %f, rng_alt %f, rng_tar %f\n", velocity_correction, target_rate, current_alt_target, pos_sensor.data.pos.z*100.0f, target_rangefinder_alt);
 
     // return combined pilot climb rate + rate to correct rangefinder alt error
     return (target_rate + velocity_correction);

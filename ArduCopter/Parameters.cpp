@@ -30,6 +30,10 @@
 
 const AP_Param::Info Copter::var_info[] = {
 
+    // @Param: P gain for PID alt hold
+    // @DisplayName: p gain for alt hold
+    GSCALAR(alt_hold_p, "AltHold_P",   1),
+
     // @Param:Tunnel_pos_y_p
     // @DisplayName: p gain for tunnel mode lateral controller
     GSCALAR(pid_tunnel_pos_y_p, "Tunnel_pos_y_p",   0),

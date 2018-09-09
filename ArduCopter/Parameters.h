@@ -380,6 +380,8 @@ public:
 
         k_param_BS_yd,
         k_param_BS_zd,
+
+        k_param_alt_hold_p,
         // the k_param_* space is 9-bits in size
         // 511: reserved
     };
@@ -408,6 +410,8 @@ public:
 
     AP_Float BS_yd;
     AP_Float BS_zd;
+
+    AP_Float alt_hold_p; // P gain for PID alt hold
     // Telemetry control
     //
     AP_Int16        sysid_this_mav;
