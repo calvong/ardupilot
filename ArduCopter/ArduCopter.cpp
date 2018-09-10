@@ -89,6 +89,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #if OPTFLOW == ENABLED
     SCHED_TASK(update_optical_flow,  200,    160),
 #endif
+    SCHED_TASK(fifty_hz_logging,      50,     50),
     SCHED_TASK(read_FakeSensor,      100,    200),
     SCHED_TASK(update_batt_compass,   10,    120),
     SCHED_TASK(read_aux_all,          10,     50),
@@ -378,11 +379,15 @@ void Copter::ten_hz_logging_loop()
 #endif
 }
 
+void Copter::fifty_hz_logging()
+{
+    backstepping->write_log();
+}
+
 // twentyfive_hz_logging - should be run at 25hz
 void Copter::twentyfive_hz_logging()
 {
     pkf->write_log();
-    backstepping->write_log();
     pos_sensor.write_log();
 
 #if HIL_MODE != HIL_MODE_DISABLED

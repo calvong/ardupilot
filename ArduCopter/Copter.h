@@ -252,7 +252,7 @@ private:
 
     AP_FakeSensor pos_sensor;
     AC_PathPlanner pp;
-    
+
     RangeFinder rangefinder{serial_manager, ROTATION_PITCH_270};
     struct {
         bool enabled:1;
@@ -669,6 +669,7 @@ private:
     void throttle_loop();
     void update_batt_compass(void);
     void read_aux_all(void);
+    void fifty_hz_logging();
     void fourhundred_hz_logging();
     void ten_hz_logging_loop();
     void twentyfive_hz_logging();

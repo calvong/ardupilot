@@ -157,8 +157,8 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,OUTROLL,THRH,PY,IY,DY,PZ,IZ,DZ",
-                                           "smmmmnn--------", "F00000000000000", "Qffffffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,OUTROLL,THRH, YD, ZD",
+                                           "smmmmnn--mm", "F0000000000", "Qffffffffff",
                                            AP_HAL::micros64(),
                                            (double) _pos.y,
                                            (double) _pos.z,
@@ -168,12 +168,8 @@ void AC_Backstepping::write_log()
                                            (double) _BS_roll,
                                            (double) _target_roll,
                                            (double) _motors.get_throttle_hover(),
-                                           (double) perr.ey*(_gains.k1_y + _gains.k2_y*_gains.k3_y),
-                                           (double) perr.iterm_y,
-                                           (double) perr.dterm_y,
-                                           (double) perr.ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z),
-                                           (double) perr.iterm_z,
-                                           (double) _pos.vel_z_err*(_gains.k2_z + _gains.k3_z));
+                                           (double) _pos_target_y,
+                                           (double) _pos_target_z);
 }
 
 void AC_Backstepping::reset_mode_switch()
