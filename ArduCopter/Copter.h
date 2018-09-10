@@ -86,6 +86,7 @@
 #include <AP_FakeSensor/AP_FakeSensor.h>
 #include <AC_Backstepping/AC_Backstepping.h>
 #include <AC_PosKalmanFilter/AC_PosKalmanFilter.h>
+#include <AC_PathPlanner/AC_PathPlanner.h>
 
 // Configuration
 #include "defines.h"
@@ -250,7 +251,8 @@ private:
     AP_InertialSensor ins;
 
     AP_FakeSensor pos_sensor;
-
+    AC_PathPlanner pp;
+    
     RangeFinder rangefinder{serial_manager, ROTATION_PITCH_270};
     struct {
         bool enabled:1;

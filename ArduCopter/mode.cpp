@@ -9,6 +9,7 @@
   constructor for Mode object
  */
 Copter::Mode::Mode(void) :
+    pp(copter.pp),
     pkf(copter.pkf),
     backstepping(copter.backstepping),
     pos_sensor(copter.pos_sensor),
@@ -67,7 +68,7 @@ Copter::Mode *Copter::mode_from_mode_num(const uint8_t mode)
         case TUNNELPID:
             ret = &mode_tunnelpid;
             break;
-            
+
 #if MODE_AUTO_ENABLED == ENABLED
         case AUTO:
             ret = &mode_auto;
