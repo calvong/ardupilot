@@ -25,6 +25,11 @@
 #define MANUAL_OVERRIDE_TIME                1.5f    // second
 #define ROLL_DTERM_MAX                      sin(30*M_PI/180.0f)*0.36    // about 20 deg of d term
 
+// defines for PID controller
+#define PID_DTERM_MAX                       2000    // 20 centidegree
+#define PID_ITERM_MAX                       1000    // 10 centidegree
+#define PID_MAX_CLIMB_RATE                  150     // cm/s
+
 class AC_Backstepping
 {
 public:
@@ -55,6 +60,12 @@ public:
     void reset_integral();
     void reset_mode_switch();
     void write_log();
+
+    // PID lateral controller
+    float update_PID_lateral_controller();
+    float get_PID_alt_climb_rate();    // cm/s
+    void get_PID_gains(float alt_p, float kp, float ki, float kd);
+    void reset_PID_integral();
 
 private:
     // references to inertial nav and ahrs libraries
@@ -102,5 +113,19 @@ private:
     float _limit_thrust(float thr);
     float _limit_sin_phi(float sp);
     float _rad2cdeg(float in);
+
+    // PID lateral controller
+    struct pid_gains_t
+    {
+        float alt_p;
+        float kp;
+        float ki;
+        float kd;
+    }_pid;
+
+    float _pid_iey;
+    float _pid_roll;
+
+    float _limit_PID_integral(float error, float in);
 
 };

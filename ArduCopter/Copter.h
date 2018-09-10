@@ -84,7 +84,6 @@
 #include <AP_TempCalibration/AP_TempCalibration.h>
 
 #include <AP_FakeSensor/AP_FakeSensor.h>
-#include <AC_TunnelPID/AC_TunnelPID.h>
 #include <AC_Backstepping/AC_Backstepping.h>
 #include <AC_PosKalmanFilter/AC_PosKalmanFilter.h>
 
@@ -251,8 +250,6 @@ private:
     AP_InertialSensor ins;
 
     AP_FakeSensor pos_sensor;
-
-    AC_TunnelPID tunnelPID;
 
     RangeFinder rangefinder{serial_manager, ROTATION_PITCH_270};
     struct {
@@ -953,6 +950,8 @@ private:
     ModeAltHold mode_althold;
     ModeLiAltHold mode_lialthold;
     ModeTunnel mode_tunnel;
+    ModeTunnelPID mode_tunnelpid;
+
 #if MODE_AUTO_ENABLED == ENABLED
     ModeAuto mode_auto;
 #endif

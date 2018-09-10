@@ -314,3 +314,87 @@ float AC_Backstepping::get_u1()
 {
     return _u1;
 }
+
+
+//==============================================================================
+//  PID controller
+//==============================================================================
+float AC_Backstepping::update_PID_lateral_controller()
+{
+    // position error
+    float ey = (_pos_target_y - _pos.y) * 100.0f;    // convert error from m to cm, so gain does not need to be a big number
+
+    // d term
+    float pid_vel_err = -_pos.vy*100.0f;  // cm/s TODO: need to add target velocity
+
+    // i term
+    _pid_iey += ey * _dt;
+
+    // update d term
+    float dterm_y = pid_vel_err*_pid.kd;
+
+    // restrict derivative to be hover throttle at max
+    dterm_y = _limit_derivative(dterm_y, PID_DTERM_MAX);
+
+    // restrict integral
+    float iterm_y = _limit_PID_integral(ey, _pid.ki*_pid_iey);
+
+    _pid_roll = _pid.kp * ey + iterm_y + dterm_y;
+
+    // limit roll output
+    if (_pid_roll > _roll_max)          _pid_roll = _roll_max;
+    else if (_pid_roll < -_roll_max)    _pid_roll = -_roll_max;
+
+    // check for manual override
+    if (!flags.manual_override)   _target_roll = _angle_transition(_pid_roll);
+    else                          _target_roll = _pilot_roll;
+
+    //hal.uartA->printf("tar %f, p %f, i %f, d %f\n", _target_roll, _pid.kp*ey, iterm_y, dterm_y);
+
+    return _target_roll;
+}
+
+float AC_Backstepping::get_PID_alt_climb_rate()
+{
+    float cr = _pid.alt_p * (_pos_target_z - _pos.z);   // cm/s
+
+    if (cr > PID_MAX_CLIMB_RATE)
+    {
+        cr = PID_MAX_CLIMB_RATE;
+    }
+    else if (cr < -PID_MAX_CLIMB_RATE)
+    {
+        cr = -PID_MAX_CLIMB_RATE;
+    }
+
+    return cr;
+}
+
+void AC_Backstepping::reset_PID_integral()
+{
+    _pid_iey = 0;
+}
+
+float AC_Backstepping::_limit_PID_integral(float error, float in)
+{
+    if (in > PID_ITERM_MAX)
+    {
+        in = PID_ITERM_MAX;
+        _pid_iey -= error * _dt;
+    }
+    else if (in < -PID_ITERM_MAX)
+    {
+        in = -PID_ITERM_MAX;
+        _pid_iey -= error * _dt;
+    }
+
+    return in;
+}
+
+void AC_Backstepping::get_PID_gains(float alt_p, float kp, float ki, float kd)
+{
+    _pid.alt_p = alt_p;
+    _pid.kp = kp;
+    _pid.ki = ki;
+    _pid.kd = kd;
+}

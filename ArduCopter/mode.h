@@ -303,6 +303,32 @@ private:
 
 };
 
+class ModeTunnelPID : public Mode {
+
+public:
+    // inherit constructor
+    using Copter::Mode::Mode;
+
+    bool init(bool ignore_checks) override;
+    void run() override;
+
+    bool requires_GPS() const override { return false; }
+    bool has_manual_throttle() const override { return false; }
+    bool allows_arming(bool from_gcs) const override { return true; };
+    bool is_autopilot() const override { return false; }
+    bool has_user_takeoff(bool must_navigate) const override {
+        return !must_navigate;
+    }
+
+protected:
+
+    const char *name() const override { return "TUNNELPID"; }
+    const char *name4() const override { return "TUNNELPID"; }
+
+private:
+
+};
+
 class ModeTunnel : public Mode {
 
 public:

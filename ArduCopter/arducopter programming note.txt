@@ -1,10 +1,16 @@
 Note for Arducopter firmware modification
 
+
+*
+
+* all new lib needs to be added in wscript and make.inc
+
+*
+
+
 //===========================================================
 // fake sensor setup
 //==========================================================
-sensor driver:
-Need to mod wscript and make.inc
 
 sensors.cpp:
 sensor func - init + read etc

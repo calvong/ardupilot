@@ -253,7 +253,7 @@ float Copter::get_surface_tracking_climb_rate_with_Hokuyo_lidar(int16_t target_r
 
     // calc desired velocity correction from target rangefinder alt vs actual rangefinder alt (remove the error already passed to Altitude controller to avoid oscillations)
     distance_error = (target_rangefinder_alt -  pos_sensor.data.pos.z*100.0f);
-    velocity_correction = distance_error * g.alt_hold_p;
+    velocity_correction = distance_error * 1;
     velocity_correction = constrain_float(velocity_correction, -THR_SURFACE_TRACKING_VELZ_MAX, THR_SURFACE_TRACKING_VELZ_MAX);
 
     //hal.uartA->printf("derr %f, cr %d, cAltTar %f, rng_alt %f, rng_tar %f\n", velocity_correction, target_rate, current_alt_target, pos_sensor.data.pos.z*100.0f, target_rangefinder_alt);

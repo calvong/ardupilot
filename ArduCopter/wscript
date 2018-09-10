@@ -36,7 +36,6 @@ def build(bld):
             'AP_OSD',
             'AP_FakeSensor',
 	        'AC_Backstepping',
-            'AC_TunnelPID',
             'AC_PosKalmanFilter'
         ],
     )

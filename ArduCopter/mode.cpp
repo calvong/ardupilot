@@ -64,6 +64,10 @@ Copter::Mode *Copter::mode_from_mode_num(const uint8_t mode)
             ret = &mode_tunnel;
             break;
 
+        case TUNNELPID:
+            ret = &mode_tunnelpid;
+            break;
+            
 #if MODE_AUTO_ENABLED == ENABLED
         case AUTO:
             ret = &mode_auto;
