@@ -58,7 +58,7 @@ void AC_Backstepping::update_alt_controller()
     float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
     perr.iterm_z = iterm_z;    // log
 
-    float thrHover = _motors.get_throttle_hover();
+    float thrHover = 0.34;//_motors.get_throttle_hover();
 
     // restrict derivative to be hover throttle at max
     dterm_z = _limit_derivative(dterm_z, thrHover*0.5f);
@@ -157,8 +157,8 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,OUTROLL,THRH, YD, ZD",
-                                           "smmmmnn--mm", "F0000000000", "Qffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,PIDROLL,THRH, YD, ZD, IY, IZ",
+                                           "smmmmnn--mm--", "F000000000000", "Qffffffffffff",
                                            AP_HAL::micros64(),
                                            (double) _pos.y,
                                            (double) _pos.z,
@@ -166,10 +166,12 @@ void AC_Backstepping::write_log()
                                            (double) _pos.vz,
                                            (double) _u1,
                                            (double) _BS_roll,
-                                           (double) _target_roll,
+                                           (double) _pid_roll,
                                            (double) _motors.get_throttle_hover(),
                                            (double) _pos_target_y,
-                                           (double) _pos_target_z);
+                                           (double) _pos_target_z,
+                                           (double) perr.iterm_y,
+                                           (double) perr.iterm_z);
 }
 
 void AC_Backstepping::reset_mode_switch()

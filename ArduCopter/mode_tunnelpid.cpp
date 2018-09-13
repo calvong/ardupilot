@@ -50,15 +50,20 @@ void Copter::ModeTunnelPID::run()
     // reset integral if on the ground
     if (!motors->armed() || !motors->get_interlock())
     {
-        backstepping->reset_PID_integral();  
+        backstepping->reset_PID_integral();
     }
 
     backstepping->get_PID_gains(g.alt_hold_p, g.TUNLpid_y_p, g.TUNLpid_y_i, g.TUNLpid_y_d);
 
     backstepping->get_pilot_lean_angle_input(target_roll, copter.aparm.angle_max);
 
+    // generate waypoint
+    pp.get_default_target(g.BS_yd, g.BS_zd);
+
+    position_t target_pos = pp.run();
+
     // update position and position target
-    backstepping->get_target_pos(g.BS_yd, g.BS_zd); // TODO: receive from path planning?
+    backstepping->get_target_pos(target_pos.y, target_pos.z); // TODO: receive from path planning?
     backstepping->pos_update(pkf->get_pos());
 
     // adjust climb rate using rangefinder

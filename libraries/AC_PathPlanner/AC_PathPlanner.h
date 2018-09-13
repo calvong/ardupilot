@@ -9,7 +9,7 @@
 #include <GCS_MAVLink/GCS.h>
 #include <DataFlash/DataFlash.h>
 
-#define WAYPOINT_TIME_INTERVAL  5000*1000    // ms*1000
+#define WAYPOINT_TIME_INTERVAL  8000*1000    // ms*1000
 
 class AC_PathPlanner
 {
@@ -33,8 +33,17 @@ private:
     uint64_t _timer = 0;    // ms * 10
     uint64_t _t0;
 
-    float _wp_y[6] = {0  , 0.5, 0.5, -0.5, -0.5, 0};
-    float _wp_z[6] = {0.8, 0.8, 1.4,  1.4,  0.8, 0.8};
+    // square
+    float _wp_y[6] = {0  , 0.6, 0.6, -0.6, -0.6, 0};
+    float _wp_z[6] = {0.6, 0.6, 1.7,  1.7,  0.6, 0.6};
+
+    // X
+    //float _wp_y[6] = {0, -0.55, 0.55, -0.55, 0.55, 0};
+    //float _wp_z[6] = {0.6, 0.6, 1.7, 1.7, 0.6, 0.6};
+
+    // up down
+    //float _wp_y[3] = {0, 0, 0};
+    //float _wp_z[3] = {0.6, 1.6, 0.6};
 
     uint16_t _wp_idx = 0;   // current waypoint index;
     uint16_t _nwp;          // number of waypoints
