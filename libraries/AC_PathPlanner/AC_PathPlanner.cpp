@@ -8,11 +8,16 @@ AC_PathPlanner::AC_PathPlanner()
     _wp_idx = 0;
     _timer = 0;
 
+    _pos_d.vy = 0;
+    _pos_d.vz = 0;
+    _pos_d.y = -0.5;
+    _pos_d.z = 0.6;
+
     _flags.atGoal = false;
     _flags.start_flight = false;
 }
 
-position_t AC_PathPlanner::run()
+position_t AC_PathPlanner::run_setpoint()
 {
     _check_flight_init();
 
@@ -30,7 +35,7 @@ position_t AC_PathPlanner::run()
         }
 
         uint32_t dt = AP_HAL::micros64() - _t0;
-        _timer += dt; 
+        _timer += dt;
 
 
         if (_timer >= WAYPOINT_TIME_INTERVAL)
@@ -53,6 +58,60 @@ position_t AC_PathPlanner::run()
     return _pos_d;
 }
 
+position_t AC_PathPlanner::run_trajectory()
+{
+    _check_flight_init();
+
+    if (_flags.start_flight && !_flags.atGoal)
+    {
+        float dt = (float) (AP_HAL::micros64() - _t0)*0.001f*0.001f;
+
+        if (_pos_d.y < 0)
+        {
+            _pos_d.vy += ad * dt;
+            _pos_d.y  += _pos_d.vy * dt;
+        }
+        else if (_pos_d.y >= 0 && _pos_d.y < 0.5)
+        {
+            _pos_d.vy += -ad * dt;
+            _pos_d.y  += _pos_d.vy * dt;
+        }
+        else
+        {
+            _flags.yGoal = true;
+        }
+
+        if (_pos_d.z < 1.1)
+        {
+            _pos_d.vz += ad * dt;
+            _pos_d.z  += _pos_d.vz * dt;
+        }
+        else if (_pos_d.z >= 1.1 && _pos_d.z < 1.6)
+        {
+            _pos_d.vz += -ad * dt;
+            _pos_d.z  += _pos_d.vz * dt;
+        }
+        else
+        {
+            _flags.zGoal = true;
+        }
+
+        if (_flags.yGoal && _flags.zGoal)   _flags.atGoal = true;
+        _ftimer += dt;
+    }
+    else
+    {
+        _timer = 0;
+        _pos_d.vy = 0;
+        _pos_d.vz = 0;
+    }
+
+    _t0 = AP_HAL::micros64();
+    //hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, timer %f\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz,_ftimer);
+    return _pos_d;
+}
+
+
 void AC_PathPlanner::get_default_target(float yd, float zd)
 {
     _wp_y[0] = yd;
@@ -71,5 +130,7 @@ void AC_PathPlanner::_check_flight_init()
     {
         _flags.start_flight = false;
         _flags.atGoal = false;
+        _pos_d.y = -0.5;
+        _pos_d.z = 0.6;
     }
 }

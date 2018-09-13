@@ -60,10 +60,12 @@ void Copter::ModeTunnelPID::run()
     // generate waypoint
     pp.get_default_target(g.BS_yd, g.BS_zd);
 
-    position_t target_pos = pp.run();
+    position_t target_pos = pp.run_trajectory();
 
     // update position and position target
-    backstepping->get_target_pos(target_pos.y, target_pos.z); // TODO: receive from path planning?
+    backstepping->get_target_pos(target_pos.y, target_pos.z);
+    backstepping->get_target_vel(target_pos.vy, target_pos.vz);
+
     backstepping->pos_update(pkf->get_pos());
 
     // adjust climb rate using rangefinder

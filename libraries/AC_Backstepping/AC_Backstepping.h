@@ -52,6 +52,7 @@ public:
     void get_imax(float imax_y, float imax_z);
     void get_gains(float yk1, float yk2, float yk3, float zk1, float zk2, float zk3);
     void get_target_pos(float yd, float zd);
+    void get_target_vel(float vyd, float vzd);
     void get_pilot_lean_angle_input(float target_roll, float roll_max);
     float get_u1();
 
@@ -92,6 +93,8 @@ private:
     float _dt;
     float _pos_target_z;
     float _pos_target_y;
+    float _vel_target_y;
+    float _vel_target_z;
     int   _prev_nset;
 
     float _imax_z;   // max integral term for pos z

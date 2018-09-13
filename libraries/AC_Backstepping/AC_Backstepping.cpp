@@ -22,6 +22,9 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
     _mode_switch_counter = 0;
     _manual_counter = 0;
 
+    _vel_target_y = 0;
+    _vel_target_z = 0;
+
     // init flags
     flags.switched_mode = false;
     flags.mode_transition_completed = false;
@@ -43,7 +46,7 @@ void AC_Backstepping::update_alt_controller()
     perr.ez = ez;   // log
 
     // d term
-    _pos.vel_z_err = -_pos.vz; //(ez - _pos.prev_ez) / _dt; // TODO: need to add target velocity
+    _pos.vel_z_err = _vel_target_z -_pos.vz; //(ez - _pos.prev_ez) / _dt; // TODO: need to add target velocity
 
     // i term
     _pos.iez += ez * _dt;
@@ -86,7 +89,7 @@ float AC_Backstepping::update_lateral_controller()
     perr.ey = ey;   // log
 
     // d term
-    _pos.vel_y_err = -_pos.vy;  // TODO: need to add target velocity
+    _pos.vel_y_err = _vel_target_z -_pos.vy;
 
     // i term
     _pos.iey += ey * _dt;
@@ -137,6 +140,12 @@ float AC_Backstepping::_angle_transition(float target_roll)
     }
 }
 
+void AC_Backstepping::get_target_vel(float vyd, float vzd)
+{
+    _vel_target_y = vyd;
+    _vel_target_z = vzd;
+}
+
 void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_max)
 {
     // in centidegrees
@@ -157,8 +166,8 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,PIDROLL,THRH, YD, ZD, IY, IZ",
-                                           "smmmmnn--mm--", "F000000000000", "Qffffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,PIDROLL,THRH, YD, ZD, VYD, VZD",
+                                           "smmmmnn--mmnn", "F000000000000", "Qffffffffffff",
                                            AP_HAL::micros64(),
                                            (double) _pos.y,
                                            (double) _pos.z,
@@ -170,8 +179,8 @@ void AC_Backstepping::write_log()
                                            (double) _motors.get_throttle_hover(),
                                            (double) _pos_target_y,
                                            (double) _pos_target_z,
-                                           (double) perr.iterm_y,
-                                           (double) perr.iterm_z);
+                                           (double) _vel_target_y,
+                                           (double) _vel_target_z);
 }
 
 void AC_Backstepping::reset_mode_switch()
@@ -323,7 +332,7 @@ float AC_Backstepping::update_PID_lateral_controller()
     float ey = (_pos_target_y - _pos.y) * 100.0f;    // convert error from m to cm, so gain does not need to be a big number
 
     // d term
-    float pid_vel_err = -_pos.vy*100.0f;  // cm/s TODO: need to add target velocity
+    float pid_vel_err = (_vel_target_y - _pos.vy) * 100.0f;  // cm/s
 
     // i term
     _pid_iey += ey * _dt;

@@ -45,10 +45,12 @@ void Copter::ModeTunnel::run()
     // generate waypoint
     pp.get_default_target(g.BS_yd, g.BS_zd);
 
-    position_t target_pos = pp.run();
+    position_t target_pos = pp.run_trajectory();
 
     // call backstepping controller
     backstepping->get_target_pos(target_pos.y, target_pos.z);
+    backstepping->get_target_vel(target_pos.vy, target_pos.vz);
+
     backstepping->pos_update(pkf->get_pos());
 
     backstepping->update_alt_controller();
