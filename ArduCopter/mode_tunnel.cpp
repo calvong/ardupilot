@@ -36,7 +36,7 @@ void Copter::ModeTunnel::run()
     // reset integral if on the ground
     if (!motors->armed() || !motors->get_interlock())
     {
-        backstepping->reset_integral();
+    //    backstepping->reset_integral();
         backstepping->reset_mode_switch();
     }
 
@@ -45,7 +45,7 @@ void Copter::ModeTunnel::run()
     // generate waypoint
     pp.get_default_target(g.BS_yd, g.BS_zd);
 
-    position_t target_pos = pp.run_trajectory();
+    position_t target_pos = pp.run_setpoint();
 
     // call backstepping controller
     backstepping->get_target_pos(target_pos.y, target_pos.z);

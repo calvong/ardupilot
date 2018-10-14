@@ -9,8 +9,9 @@
 #include <GCS_MAVLink/GCS.h>
 #include <DataFlash/DataFlash.h>
 
-#define WAYPOINT_TIME_INTERVAL  8000*1000   // ms*1000
-#define ad                      0.25        // m/s^2, desired accleration
+#define WAYPOINT_TIME_INTERVAL  10000*1000   // ms*1000
+#define ad                      0.1        // m/s^2, desired accleration
+#define DIST_THRES              0.001       // m
 
 class AC_PathPlanner
 {
@@ -41,8 +42,8 @@ private:
 
     // *** for setpoint tracking ***
     // square
-    float _wp_y[6] = {0  , 0.6, 0.6, -0.6, -0.6, 0};
-    float _wp_z[6] = {0.6, 0.6, 1.7,  1.7,  0.6, 0.6};
+    //float _wp_y[6] = {0  , 0.6, 0.6, -0.6, -0.6, 0};
+    //float _wp_z[6] = {0.6, 0.6, 1.7,  1.7,  0.6, 0.6};
 
     // X
     //float _wp_y[6] = {0, -0.55, 0.55, -0.55, 0.55, 0};
@@ -51,6 +52,14 @@ private:
     // up down
     //float _wp_y[3] = {0, 0, 0};
     //float _wp_z[3] = {0.6, 1.6, 0.6};
+
+    // step up <> down
+    //float _wp_y[7] = {0, 0, 0, 0, 0, 0, 0}; // middle
+    //float _wp_y[7] = {0.55,0.55,0.55,0.55,0.55,0.55,0.55};
+    //float _wp_z[7] = {0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.7};
+
+    float _wp_y[4] = {0.55,0.55,0.55,0.55};
+    float _wp_z[4] = {0.4, 0.8, 1.2, 1.6};
 
     uint16_t _wp_idx = 0;   // current waypoint index;
     uint16_t _nwp;          // number of waypoints

@@ -12,7 +12,7 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
                                  _fs(fs)
 {
     // init variables
-    _imax_z = _motors.get_throttle_hover() * 0.5f;  // TEMP
+    _imax_z = 0.15;//_motors.get_throttle_hover() * 0.5f;  // TEMP
     _imax_y = sin(10 *M_PI/180.0f) * 0.36;  // 10 deg -> max roll angle for pos y integral
 
     _pos_target_z = 0.5f; // 50 cm above ground
@@ -61,7 +61,7 @@ void AC_Backstepping::update_alt_controller()
     float iterm_z = _limit_integral(_gains.k1_z*_gains.k3_z, ez, 'z');
     perr.iterm_z = iterm_z;    // log
 
-    float thrHover = 0.34;//_motors.get_throttle_hover();
+    float thrHover = 0.33;//_motors.get_throttle_hover();
 
     // restrict derivative to be hover throttle at max
     dterm_z = _limit_derivative(dterm_z, thrHover*0.5f);
@@ -74,7 +74,7 @@ void AC_Backstepping::update_alt_controller()
     // mode transition throttle ramping, 0.5s
     if (!flags.mode_transition_completed)   _thr_out = _throttle_transition(_thr_out);
 
-    //hal.uartA->printf("u1 %f, p %f, i %f, d %f, ThrH %f, z %f\n", _thr_out, ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z), iterm_z, dterm_z,_motors.get_throttle_hover(),_pos.z);
+    //hal.uartA->printf("u1 %f, p %f, i %f, d %f, ThrH %f, z %f\n", _thr_out, ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z), perr.iterm_z, iterm_z,_pos_target_z,_pos.z);
 
     // output throttle to attitude controller -> motor
     // dont use throttle boost, irrelevant for backstepping
@@ -166,8 +166,8 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,PIDROLL,THRH, YD, ZD, VYD, VZD",
-                                           "smmmmnn--mmnn", "F000000000000", "Qffffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,THRH, YD, ZD, VYD, VZD, IY, IZ",
+                                           "smmmmnn-mmnn--", "F0000000000000", "Qfffffffffffff",
                                            AP_HAL::micros64(),
                                            (double) _pos.y,
                                            (double) _pos.z,
@@ -175,12 +175,13 @@ void AC_Backstepping::write_log()
                                            (double) _pos.vz,
                                            (double) _u1,
                                            (double) _BS_roll,
-                                           (double) _pid_roll,
                                            (double) _motors.get_throttle_hover(),
                                            (double) _pos_target_y,
                                            (double) _pos_target_z,
                                            (double) _vel_target_y,
-                                           (double) _vel_target_z);
+                                           (double) _vel_target_z,
+                                           (double) _ahrs.roll,
+                                           (double) _ahrs.pitch);
 }
 
 void AC_Backstepping::reset_mode_switch()
