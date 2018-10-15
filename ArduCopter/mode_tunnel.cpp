@@ -43,13 +43,15 @@ void Copter::ModeTunnel::run()
     motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
 
     // generate waypoint
-    pp.get_default_target(g.BS_yd, g.BS_zd);
+    //pp.get_default_target(g.BS_yd, g.BS_zd);
 
-    position_t target_pos = pp.run_setpoint();
+    //position_t target_pos = pp.run_setpoint();
 
     // call backstepping controller
-    backstepping->get_target_pos(target_pos.y, target_pos.z);
-    backstepping->get_target_vel(target_pos.vy, target_pos.vz);
+    //backstepping->get_target_pos(target_pos.y, target_pos.z);
+    //backstepping->get_target_vel(target_pos.vy, target_pos.vz);
+    backstepping->get_target_pos(pos_sensor.data.pos.yd, pos_sensor.data.pos.zd);
+    backstepping->get_target_vel(0, 0);
 
     backstepping->pos_update(pkf->get_pos());
 

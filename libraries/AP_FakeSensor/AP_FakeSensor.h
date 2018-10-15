@@ -14,7 +14,7 @@
 
 #define ODROID_BAUDRATE 921600
 #define N_MSG_VARIABLE  5
-#define DATA_BUF_SIZE 16 // 4 int variables
+#define DATA_BUF_SIZE 24 // 6 int variables
 #define FAR_THRESHOLD 2000 // mm
 
 using namespace std;
@@ -70,6 +70,8 @@ struct position_t
 {
     float y;        // m
     float z;        // m
+    float yd;       // target y
+    float zd;       // target z
     float vy;       // m/s
     float vz;       // m/s
     int nset = 0;
@@ -127,7 +129,7 @@ public:
     bool data_is_ok();
     void get_KF_pos(position_t p);  // get kalman filter output;
     void write_log();
-    
+
     // get controller info
     void read_controller(pos_error_t perr, float u1);
 

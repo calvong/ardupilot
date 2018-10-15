@@ -86,13 +86,13 @@ void AP_FakeSensor::_get_pos()
     // position update
     if (nbytes)
     {
-        if (nbytes == 17)
+        if (nbytes == 25)
         {
             char c = _uart->read();
 
             if (c == '$')
             {
-                for (int i=0;i<16;i++)
+                for (int i=0;i<24;i++)
                 {
                     _linebuf[_buflen++] = _uart->read();
                 }
@@ -100,8 +100,10 @@ void AP_FakeSensor::_get_pos()
                 data.pos.y = (float) _byte2int(_linebuf, 1) * 0.001f;
                 data.pos.z = (float) _byte2int(_linebuf, 2) * 0.001f;
                 data.pos.nset = _byte2int(_linebuf, 3);
+                data.pos.yd = (float) _byte2int(_linebuf, 4) * 0.001f;
+                data.pos.zd = (float) _byte2int(_linebuf, 5) * 0.001f;
 
-                //hal.uartA->printf("y %f, z %f, n %d\n", data.pos.y, data.pos.z, data.pos.nset);
+                hal.uartA->printf("y %f, z %f, n %d\n", data.pos.yd, data.pos.zd, data.pos.nset);
             }
         }
         else
@@ -112,7 +114,7 @@ void AP_FakeSensor::_get_pos()
 
             }
 
-            if (_brokenlen == 17)
+            if (_brokenlen == 25)
             {
                 //int y = _byte2int(_linebuf, 1);
                 //int z = _byte2int(_linebuf, 2);
