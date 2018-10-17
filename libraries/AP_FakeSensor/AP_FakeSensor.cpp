@@ -103,7 +103,10 @@ void AP_FakeSensor::_get_pos()
                 data.pos.yd = (float) _byte2int(_linebuf, 4) * 0.001f;
                 data.pos.zd = (float) _byte2int(_linebuf, 5) * 0.001f;
 
-                hal.uartA->printf("y %f, z %f, n %d\n", data.pos.yd, data.pos.zd, data.pos.nset);
+                data.pos.yd = _limit_y_target(data.pos.yd);
+                data.pos.zd = _limit_z_target(data.pos.zd);
+
+                //hal.uartA->printf("y %f, z %f, n %d\n", data.pos.yd, data.pos.zd, data.pos.nset);
             }
         }
         else
@@ -246,6 +249,26 @@ float AP_FakeSensor::_byte2float(char* buffer, int position)
     f.buf[3] = buffer[position*4+3];
 
     return f.num;
+}
+
+float AP_FakeSensor::_limit_y_target(float yd)
+{
+    if (yd > MAX_Y_TARGET)
+        return MAX_Y_TARGET;
+    else if (yd < -MAX_Y_TARGET)
+        return -MAX_Y_TARGET;
+    else
+        return yd;
+}
+
+float AP_FakeSensor::_limit_z_target(float zd)
+{
+    if (zd > MAX_Z_TARGET)
+        return MAX_Z_TARGET;
+    else if (zd < 0.3)
+        return 0.3;
+    else
+        return zd;
 }
 
 void AP_FakeSensor::write_log()

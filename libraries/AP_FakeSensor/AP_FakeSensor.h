@@ -16,6 +16,8 @@
 #define N_MSG_VARIABLE  5
 #define DATA_BUF_SIZE 24 // 6 int variables
 #define FAR_THRESHOLD 2000 // mm
+#define MAX_Y_TARGET 0.5
+#define MAX_Z_TARGET 1.5
 
 using namespace std;
 
@@ -152,6 +154,8 @@ private:
     void _msg_sender(vector<unsigned char>  msg);
 
     // helper
+    float _limit_y_target(float yd);
+    float _limit_z_target(float zd);
     float _limit_thr(float thr);    // restrict throttle from 0-1 (mainly noise issue?)
     vector<unsigned char> _int2byte(vector<unsigned char> in, int value);
     vector<unsigned char> _float2byte(vector<unsigned char> in, float value);
