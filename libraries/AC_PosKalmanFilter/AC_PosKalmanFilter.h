@@ -4,6 +4,7 @@
 #include <AP_Param/AP_Param.h>
 #include <AP_Math/AP_Math.h>
 #include <DataFlash/DataFlash.h>
+#include <RC_Channel/RC_Channel.h>
 #include <AP_InertialSensor/AP_InertialSensor.h>
 #include <AP_InertialNav/AP_InertialNav.h>     // Inertial Navigation library
 #include <AP_AHRS/AP_AHRS_View.h>
@@ -12,7 +13,21 @@
 #define POS_FILTER_CUTOFF_FREQ  2.0f
 #define R                       0.0025f     // measurement noise cov
 #define Q                       0.0225f     // process noise cov
-#define G_KF                    9.81f        // gravity for kalman filter
+#define G_KF                    9.81f       // gravity for kalman filter
+#define alpha                   0.8         // exp moving average for IMU bias, % of new value
+
+struct IMU_bias_t
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct pkf_flag_t
+{
+    bool idle = true;
+    bool reset_vel = false;
+};
 
 class AC_PosKalmanFilter
 {
@@ -38,16 +53,23 @@ private:
     vector<float> _Pe;   // error covariance estimate
     vector<float> _K;   // Kalman gain
 
-    float dt_KF;
-    float dt_KF2;
-    uint64_t t0;
+    float _dt_KF;
+    float _dt_KF2;
+    double _ground_timer = 0;
+    uint64_t _t0;
 
+    IMU_bias_t _a_bias;
     position_t _pos;
+
+    pkf_flag_t _flags;
 
     int _prev_data_set;
 
     // KF matrix operation
     void _init();
+    void _is_onGround();
+    void _check_onGround_reset();
+
     vector<float> _Kk(vector<float> P);
     vector<float> _P_estimate(vector<float> P, vector<float> K);
     vector<float> _P_predict(vector<float> P);

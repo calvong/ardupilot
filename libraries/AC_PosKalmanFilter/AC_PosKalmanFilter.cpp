@@ -13,8 +13,14 @@ AC_PosKalmanFilter::AC_PosKalmanFilter(const AP_AHRS_View& ahrs,
 
     _init();
 
-    dt_KF = 0.0025f;
-    dt_KF2 = dt_KF*dt_KF;
+    _a_bias.x = 0;
+    _a_bias.y = 0;
+    _a_bias.z = 0;
+
+    _dt_KF = 0.0025f;
+    _dt_KF2 = _dt_KF*_dt_KF;
+
+    _t0 = AP_HAL::micros64();
 }
 
 void AC_PosKalmanFilter::_init()
@@ -45,11 +51,15 @@ void AC_PosKalmanFilter::_init()
 
 void AC_PosKalmanFilter::run()
 {
-    dt_KF = (float) (AP_HAL::micros64()-t0)*0.001f*0.001f;
-    dt_KF2 = dt_KF*dt_KF;
+    _dt_KF = (float) (AP_HAL::micros64()-_t0)*0.001f*0.001f; // second
+    _dt_KF2 = _dt_KF*_dt_KF;
 
     // get accelerations
     const Vector3f &accel = _ahrs.get_accel_ef_blended();
+
+    // check if need to reset velocity drift
+    _check_onGround_reset();
+
     float ay = accel.y;
     float az = -(accel.z + G_KF);
 
@@ -76,7 +86,14 @@ void AC_PosKalmanFilter::run()
 
     _prev_data_set = _fs.data.pos.nset;
 
-    t0 = AP_HAL::micros64();
+    _t0 = AP_HAL::micros64();
+
+    int abc = 0;
+
+    if (_flags.reset_vel) abc = 1;
+
+    hal.uartA->printf("ay %4.5f, by %4.5f, vy %4.5f abc:%d\n", ay, _a_bias.y, _pos.vy, abc);
+
     //print_shit();
 }
 
@@ -86,12 +103,12 @@ vector<float> AC_PosKalmanFilter::_X_predict(vector<float> Xe, float ay, float a
     xp.reserve(4);
 
     // y
-    xp.push_back( Xe[0] + Xe[1]*dt_KF + 0.5f*ay*dt_KF2 );
-    xp.push_back( Xe[1] + ay*dt_KF                     );
+    xp.push_back( Xe[0] + Xe[1]*_dt_KF + 0.5f*ay*_dt_KF2 );
+    xp.push_back( Xe[1] + ay*_dt_KF                     );
 
     // z
-    xp.push_back( Xe[2] + Xe[3]*dt_KF + 0.5f*az*dt_KF2 );
-    xp.push_back( Xe[3] + az*dt_KF                     );
+    xp.push_back( Xe[2] + Xe[3]*_dt_KF + 0.5f*az*_dt_KF2 );
+    xp.push_back( Xe[3] + az*_dt_KF                     );
 
     return xp;
 }
@@ -118,15 +135,15 @@ vector<float> AC_PosKalmanFilter::_P_predict(vector<float> P)
     pp.reserve(8);
 
     // y
-    pp.push_back( P[0] + Q + dt_KF*P[2] + dt_KF*(P[1] + dt_KF*P[3]) );
-    pp.push_back( P[1] + dt_KF * P[3]                               );
-    pp.push_back( P[2] + dt_KF * P[3]                               );
+    pp.push_back( P[0] + Q + _dt_KF*P[2] + _dt_KF*(P[1] + _dt_KF*P[3]) );
+    pp.push_back( P[1] + _dt_KF * P[3]                               );
+    pp.push_back( P[2] + _dt_KF * P[3]                               );
     pp.push_back( P[3] + Q                                          );
 
     // z
-    pp.push_back( P[4] + Q + dt_KF*P[6] + dt_KF*(P[5] + dt_KF*P[7]) );
-    pp.push_back( P[5] + dt_KF * P[7]                               );
-    pp.push_back( P[6] + dt_KF * P[7]                               );
+    pp.push_back( P[4] + Q + _dt_KF*P[6] + _dt_KF*(P[5] + _dt_KF*P[7]) );
+    pp.push_back( P[5] + _dt_KF * P[7]                               );
+    pp.push_back( P[6] + _dt_KF * P[7]                               );
     pp.push_back( P[7] + Q                                          );
 
     return pp;
@@ -138,16 +155,16 @@ vector<float> AC_PosKalmanFilter::_P_estimate(vector<float> P, vector<float> K)
     pe.reserve(8);
 
     // y
-    pe.push_back( -(K[0] - 1) * (P[0] + Q + dt_KF * P[2] + dt_KF * (P[1] + dt_KF * P[3]))                   );
-    pe.push_back( -(P[1] + dt_KF * P[3]) * (K[0] - 1)                                                       );
-    pe.push_back( P[2] - K[1] * (P[0] + Q + dt_KF * P[2] + dt_KF * (P[1] + dt_KF * P[3])) + dt_KF * P[3]    );
-    pe.push_back( P[3] + Q - K[1] * (P[1] + dt_KF * P[3])                                                   );
+    pe.push_back( -(K[0] - 1) * (P[0] + Q + _dt_KF * P[2] + _dt_KF * (P[1] + _dt_KF * P[3]))                   );
+    pe.push_back( -(P[1] + _dt_KF * P[3]) * (K[0] - 1)                                                       );
+    pe.push_back( P[2] - K[1] * (P[0] + Q + _dt_KF * P[2] + _dt_KF * (P[1] + _dt_KF * P[3])) + _dt_KF * P[3]    );
+    pe.push_back( P[3] + Q - K[1] * (P[1] + _dt_KF * P[3])                                                   );
 
     // z
-    pe.push_back( -(K[2] - 1) * (P[4] + Q + dt_KF * P[6] + dt_KF * (P[5] + dt_KF * P[7]))                   );
-    pe.push_back( -(P[5] + dt_KF * P[7]) * (K[2] - 1)                                                       );
-    pe.push_back( P[6] - K[3] * (P[4] + Q + dt_KF * P[6] + dt_KF * (P[5] + dt_KF * P[7])) + dt_KF * P[7]    );
-    pe.push_back( P[7] + Q - K[3] * (P[5] + dt_KF * P[7])                                                   );
+    pe.push_back( -(K[2] - 1) * (P[4] + Q + _dt_KF * P[6] + _dt_KF * (P[5] + _dt_KF * P[7]))                   );
+    pe.push_back( -(P[5] + _dt_KF * P[7]) * (K[2] - 1)                                                       );
+    pe.push_back( P[6] - K[3] * (P[4] + Q + _dt_KF * P[6] + _dt_KF * (P[5] + _dt_KF * P[7])) + _dt_KF * P[7]    );
+    pe.push_back( P[7] + Q - K[3] * (P[5] + _dt_KF * P[7])                                                   );
 
     return pe;
 }
@@ -168,9 +185,50 @@ vector<float> AC_PosKalmanFilter::_Kk(vector<float> P)
     return k;
 }
 
+void AC_PosKalmanFilter::_check_onGround_reset()
+{
+    _is_onGround(); // check if system is idle on the ground
+
+    if (_flags.reset_vel)
+    {
+        _Xe[1] = 0;
+        _Xe[3] = 0;
+    }
+}
+
 position_t AC_PosKalmanFilter::get_pos()
 {
     return _pos;
+}
+
+void AC_PosKalmanFilter::_is_onGround()
+{
+    int thr = rc().channel(CH_3)->get_radio_in();
+
+    if (thr > 1100)
+    {
+        _flags.idle = false;
+        _flags.reset_vel = false;
+        _ground_timer = 0;
+    }
+    else
+    {
+        _flags.idle = true;
+
+        if (_ground_timer > 10) // if rest for 10s, start sampling IMU bias
+        {
+            _flags.reset_vel = true;
+        }
+
+        _ground_timer += _dt_KF;
+
+        if (_ground_timer > 20)
+        {
+            _ground_timer = 0;
+            _flags.reset_vel = false;
+        }
+    }
+
 }
 
 void AC_PosKalmanFilter::print_shit()
