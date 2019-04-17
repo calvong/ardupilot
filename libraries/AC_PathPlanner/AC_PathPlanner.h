@@ -11,7 +11,7 @@
 
 #define WAYPOINT_TIME_INTERVAL  10000*1000   // ms*1000
 #define ad                      0.1        // m/s^2, desired accleration
-#define DIST_THRES              0.001       // m
+#define DIST_THRES              0.05       // m
 
 class AC_PathPlanner
 {
@@ -19,8 +19,10 @@ public:
 
     AC_PathPlanner();
     position_t run_setpoint();
-    position_t run_trajectory();
+    position_t run_diagonal_trajectory();
+    position_t run_circular_trajectory();
     position_t get_target_pos();
+    void get_current_pos(position_t pos);
     void get_default_target(float yd, float zd);
 
 private:
@@ -39,6 +41,11 @@ private:
     float _ftimer = 0;
     uint64_t _timer = 0;    // ms * 10
     uint64_t _t0;
+
+    // circular trajectory parameters
+    float _cir_radius = 0.3;            // circle radius
+    float _cir_height_offset = 0.6;     // height offset
+    float _w = 0.2;                    // time constant/frequency : small = slow
 
     // *** for setpoint tracking ***
     // square

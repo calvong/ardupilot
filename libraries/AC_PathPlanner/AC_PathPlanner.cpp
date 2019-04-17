@@ -61,64 +61,54 @@ position_t AC_PathPlanner::run_setpoint()
     return _pos_d;
 }
 
-/*
-position_t AC_PathPlanner::run_trajectory()
+position_t AC_PathPlanner::run_circular_trajectory()
 {
     _check_flight_init();
 
     if (_flags.start_flight && !_flags.atGoal)
     {
         float dt = (float) (AP_HAL::micros64() - _t0)*0.001f*0.001f;
-        //dt = 0.0025;
+    
+        if (_wp_idx == 0)
+        {
+            // position
+            _pos_d.y = 0;
+            _pos_d.z = _cir_height_offset + _cir_radius;
 
-        if (_pos_d.y < 0)
-        {
-            _pos_d.vy += ad * dt;
-            _pos_d.y  += _pos_d.vy * dt;
+            // velocity
+            _pos_d.vy = _cir_radius * _w * M_PI;
+            _pos_d.vz = 0;
+
+            // check if reached the starting point
+            if (fabs(_pos_d.y - _pos.y) < DIST_THRES && fabs(_pos_d.z - _pos.z) < DIST_THRES)
+            {
+                _wp_idx++;
+            }
+
         }
-        else if (_pos_d.y >= 0 && _pos_d.y < 0.5-DIST_THRES)
+        else if (_wp_idx == 1)
         {
-            _pos_d.vy += -ad * dt;
-            _pos_d.y  += _pos_d.vy * dt;
-        }
-        else
-        {
-            _flags.yGoal = true;
+            // position
+            _pos_d.y = _cir_radius * sin(_w*M_PI*_ftimer);
+            _pos_d.z = _cir_height_offset + _cir_radius * cos(_w*M_PI*_ftimer);
+
+            // velocity
+            _pos_d.vy = _cir_radius * _w * M_PI * cos(_w*M_PI*_ftimer);
+            _pos_d.vz = - _cir_radius * _w * M_PI * sin(_w*M_PI*_ftimer);
+
+            _ftimer += dt;
         }
 
-        if (_pos_d.z < 1.1)
-        {
-            _pos_d.vz += ad * dt;
-            _pos_d.z  += _pos_d.vz * dt;
-        }
-        else if (_pos_d.z >= 1.1 && _pos_d.z < 1.6-DIST_THRES)
-        {
-            _pos_d.vz += -ad * dt;
-            _pos_d.z  += _pos_d.vz * dt;
-        }
-        else
-        {
-            _flags.zGoal = true;
-        }
 
-        if (_flags.yGoal && _flags.zGoal)   _flags.atGoal = true;
-        _ftimer += dt;
-    }
-    else
-    {
-        _timer = 0;
-        _pos_d.vy = 0;
-        _pos_d.vz = 0;
     }
 
     _t0 = AP_HAL::micros64();
-    //hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, timer %f\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz,_ftimer);
+    hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, timer %f, idx %d\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz,_ftimer, _wp_idx);
     return _pos_d;
 }
-*/
 
 
-position_t AC_PathPlanner::run_trajectory()
+position_t AC_PathPlanner::run_diagonal_trajectory()
 {
     _check_flight_init();
 
@@ -248,6 +238,62 @@ position_t AC_PathPlanner::run_trajectory()
     return _pos_d;
 }
 
+/*
+position_t AC_PathPlanner::run_trajectory()
+{
+    _check_flight_init();
+
+    if (_flags.start_flight && !_flags.atGoal)
+    {
+        float dt = (float) (AP_HAL::micros64() - _t0)*0.001f*0.001f;
+        //dt = 0.0025;
+
+        if (_pos_d.y < 0)
+        {
+            _pos_d.vy += ad * dt;
+            _pos_d.y  += _pos_d.vy * dt;
+        }
+        else if (_pos_d.y >= 0 && _pos_d.y < 0.5-DIST_THRES)
+        {
+            _pos_d.vy += -ad * dt;
+            _pos_d.y  += _pos_d.vy * dt;
+        }
+        else
+        {
+            _flags.yGoal = true;
+        }
+
+        if (_pos_d.z < 1.1)
+        {
+            _pos_d.vz += ad * dt;
+            _pos_d.z  += _pos_d.vz * dt;
+        }
+        else if (_pos_d.z >= 1.1 && _pos_d.z < 1.6-DIST_THRES)
+        {
+            _pos_d.vz += -ad * dt;
+            _pos_d.z  += _pos_d.vz * dt;
+        }
+        else
+        {
+            _flags.zGoal = true;
+        }
+
+        if (_flags.yGoal && _flags.zGoal)   _flags.atGoal = true;
+        _ftimer += dt;
+    }
+    else
+    {
+        _timer = 0;
+        _pos_d.vy = 0;
+        _pos_d.vz = 0;
+    }
+
+    _t0 = AP_HAL::micros64();
+    //hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, timer %f\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz,_ftimer);
+    return _pos_d;
+}
+*/
+
 
 void AC_PathPlanner::get_default_target(float yd, float zd)
 {
@@ -271,5 +317,13 @@ void AC_PathPlanner::_check_flight_init()
         _flags.zGoal = false;
         _pos_d.y = -0.5;
         _pos_d.z = 0.6;
+        _timer = 0;
+        _ftimer = 0;
+        _wp_idx = 0;
     }
+}
+
+void AC_PathPlanner::get_current_pos(position_t pos)
+{
+    _pos = pos;
 }
