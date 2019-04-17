@@ -88,11 +88,11 @@ void AC_PosKalmanFilter::run()
 
     _t0 = AP_HAL::micros64();
 
-    int abc = 0;
+    //int abc = 0;
 
-    if (_flags.reset_vel) abc = 1;
+    //if (_flags.reset_vel) abc = 1;
 
-    hal.uartA->printf("ay %4.5f, by %4.5f, vy %4.5f abc:%d\n", ay, _a_bias.y, _pos.vy, abc);
+    //hal.uartA->printf("ay %4.5f, by %4.5f, vy %4.5f abc:%d\n", ay, _a_bias.y, _pos.vy, abc);
 
     //print_shit();
 }

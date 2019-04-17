@@ -2,7 +2,7 @@
 
 
 /*
- * Init and run calls for althold, flight mode
+ * Init and run calls for althold, flight mode 24
  */
 
 // althold_init - initialise althold controller
@@ -45,7 +45,8 @@ void Copter::ModeTunnel::run()
     // generate waypoint
     pp.get_default_target(g.BS_yd, g.BS_zd);
 
-    position_t target_pos = pp.run_setpoint();
+    pp.get_current_pos(pkf->get_pos());
+    position_t target_pos = pp.run_circular_trajectory();
 
     // call backstepping controller
     backstepping->get_target_pos(target_pos.y, target_pos.z);

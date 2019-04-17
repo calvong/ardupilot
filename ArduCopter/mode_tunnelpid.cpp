@@ -2,7 +2,7 @@
 
 extern const AP_HAL::HAL &hal;
 /*
- * Init and run calls for althold, flight mode
+ * Init and run calls for althold, flight mode 26
  */
 
 // althold_init - initialise althold controller
@@ -60,7 +60,7 @@ void Copter::ModeTunnelPID::run()
     // generate waypoint
     pp.get_default_target(g.BS_yd, g.BS_zd);
 
-    position_t target_pos = pp.run_trajectory();
+    position_t target_pos = pp.run_diagonal_trajectory();
 
     // update position and position target
     backstepping->get_target_pos(target_pos.y, target_pos.z);
