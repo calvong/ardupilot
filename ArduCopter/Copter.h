@@ -669,7 +669,7 @@ private:
     void throttle_loop();
     void update_batt_compass(void);
     void read_aux_all(void);
-    void fifty_hz_logging();
+    void hundred_hz_logging();
     void fourhundred_hz_logging();
     void ten_hz_logging_loop();
     void twentyfive_hz_logging();
