@@ -89,7 +89,7 @@ float AC_Backstepping::update_lateral_controller()
     perr.ey = ey;   // log
 
     // d term
-    _pos.vel_y_err = _vel_target_z -_pos.vy;
+    _pos.vel_y_err = _vel_target_y -_pos.vy;
 
     // i term
     _pos.iey += ey * _dt;
