@@ -72,6 +72,8 @@ struct position_t
     float z;        // m
     float vy;       // m/s
     float vz;       // m/s
+    float ay;       // m/s^2
+    float az;       // m/s^2
     int nset = 0;
 
     // controller stuff
@@ -127,7 +129,7 @@ public:
     bool data_is_ok();
     void get_KF_pos(position_t p);  // get kalman filter output;
     void write_log();
-    
+
     // get controller info
     void read_controller(pos_error_t perr, float u1);
 

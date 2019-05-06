@@ -19,7 +19,7 @@
 #define DEFAULT_IMAX                        10
 #define BACKSTEPPING_THROTTLE_CUTOFF_FREQ   2.0f    // low-pass filter on accel error (unit: hz)
 #define BACKSTEPPING_VEL_ERROR_CUTOFF_FREQ  5.0f
-#define THRUST_SCALE_FACTOR                 0.01f
+#define ACCEL_SCALE_FACTOR                  0.04f   // to scale desired acceleration to program output: 0.04 is best
 #define POS_ERROR_THRESHOLD                 1.5f    // in m, max allowed change in position
 #define THROTTLE_TRANSITION_TIME            1.5f    // second
 #define MANUAL_OVERRIDE_TIME                1.5f    // second
@@ -53,6 +53,7 @@ public:
     void get_gains(float yk1, float yk2, float yk3, float zk1, float zk2, float zk3);
     void get_target_pos(float yd, float zd);
     void get_target_vel(float vyd, float vzd);
+    void get_target_accel(float ayd, float azd);
     void get_pilot_lean_angle_input(float target_roll, float roll_max);
     float get_u1();
 
@@ -95,6 +96,8 @@ private:
     float _pos_target_y;
     float _vel_target_y;
     float _vel_target_z;
+    float _accel_target_y;
+    float _accel_target_z;
     int   _prev_nset;
 
     float _imax_z;   // max integral term for pos z

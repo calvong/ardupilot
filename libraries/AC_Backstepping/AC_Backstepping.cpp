@@ -67,7 +67,7 @@ void AC_Backstepping::update_alt_controller()
     dterm_z = _limit_derivative(dterm_z, thrHover*0.5f);
 
     // compute u1
-    _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z + thrHover) / (cphi*cthe);
+    _u1 = (dterm_z + ez*(_gains.k1_z + _gains.k2_z*_gains.k3_z) + iterm_z + thrHover + _accel_target_z*ACCEL_SCALE_FACTOR) / (cphi*cthe);
 
     _thr_out = _limit_thrust(_u1);
 
@@ -108,7 +108,7 @@ float AC_Backstepping::update_lateral_controller()
     float iterm_y = _limit_integral(_gains.k1_y*_gains.k3_y, ey, 'y');
     perr.iterm_y = iterm_y;    // log
 
-    float sin_phi = _limit_sin_phi( ((_gains.k1_y + _gains.k2_y*_gains.k3_y)*ey + iterm_y + dterm_y) / _u1 );
+    float sin_phi = _limit_sin_phi( ((_gains.k1_y + _gains.k2_y*_gains.k3_y)*ey + iterm_y + dterm_y + _accel_target_y*ACCEL_SCALE_FACTOR) / _u1 );
 
     _BS_roll = asin(sin_phi);
 
@@ -119,7 +119,7 @@ float AC_Backstepping::update_lateral_controller()
     if (!flags.manual_override)   _target_roll = _angle_transition(_BS_roll);
     else                          _target_roll = _pilot_roll;
 
-    //hal.uartA->printf("tar %f, p %f, i %f, iey %f, iez %f\n", _target_roll,(_gains.k1_y + _gains.k2_y*_gains.k3_y)* ey, iterm_y, _pos.iey, _pos.iez);
+    //hal.uartA->printf("tar %f, p %f, accel %f\n", _target_roll,(_gains.k1_y + _gains.k2_y*_gains.k3_y)* ey, _accel_target_z);
 
     return _target_roll;
 }
@@ -146,6 +146,12 @@ void AC_Backstepping::get_target_vel(float vyd, float vzd)
     _vel_target_z = vzd;
 }
 
+void AC_Backstepping::get_target_accel(float ayd, float azd)
+{
+    _accel_target_y = ayd;
+    _accel_target_z = azd;
+}
+
 void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_max)
 {
     // in centidegrees
@@ -166,22 +172,21 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,BSROLL,THRH, YD, ZD, VYD, VZD, IY, IZ",
-                                           "smmmmnn-mmnn--", "F0000000000000", "Qfffffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,ROLL_D, YD, ZD, VYD, VZD, AYD, AZD",
+                                           "smmmmnn-mmnn-", "F000000000000", "Qffffffffffff",
                                            AP_HAL::micros64(),
                                            (double) _pos.y,
                                            (double) _pos.z,
                                            (double) _pos.vy,
                                            (double) _pos.vz,
                                            (double) _u1,
-                                           (double) _BS_roll,
-                                           (double) _motors.get_throttle_hover(),
+                                           (double) _target_roll,
                                            (double) _pos_target_y,
                                            (double) _pos_target_z,
                                            (double) _vel_target_y,
                                            (double) _vel_target_z,
-                                           (double) _ahrs.roll,
-                                           (double) _ahrs.pitch);
+                                           (double) _accel_target_y,
+                                           (double) _accel_target_z);
 }
 
 void AC_Backstepping::reset_mode_switch()
