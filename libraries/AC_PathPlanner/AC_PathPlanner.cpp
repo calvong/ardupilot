@@ -10,8 +10,8 @@ AC_PathPlanner::AC_PathPlanner()
 
     _pos_d.vy = 0;
     _pos_d.vz = 0;
-    _pos_d.y = -0.5;
-    _pos_d.z = 0.6;
+    _pos_d.y = 0;
+    _pos_d.z = 1;
 
     _flags.atGoal = false;
     _flags.start_flight = false;
@@ -68,7 +68,7 @@ position_t AC_PathPlanner::run_circular_trajectory()
     if (_flags.start_flight && !_flags.atGoal)
     {
         float dt = (float) (AP_HAL::micros64() - _t0)*0.001f*0.001f;
-    
+
         if (_wp_idx == 0)
         {
             // position
@@ -76,7 +76,7 @@ position_t AC_PathPlanner::run_circular_trajectory()
             _pos_d.z = _cir_height_offset + _cir_radius;
 
             // velocity
-            _pos_d.vy = _cir_radius * _w * M_PI;
+            _pos_d.vy = 0;//_cir_radius * _w * M_PI;
             _pos_d.vz = 0;
 
             // check if reached the starting point
@@ -96,6 +96,10 @@ position_t AC_PathPlanner::run_circular_trajectory()
             _pos_d.vy = _cir_radius * _w * M_PI * cos(_w*M_PI*_ftimer);
             _pos_d.vz = - _cir_radius * _w * M_PI * sin(_w*M_PI*_ftimer);
 
+            // acceleration
+            _pos_d.ay = -_cir_radius * _w * _w * M_PI * M_PI * sin(_w*M_PI*_ftimer);
+            _pos_d.az = -_cir_radius * _w * _w * M_PI * M_PI * cos(_w*M_PI*_ftimer);
+
             _ftimer += dt;
         }
 
@@ -103,7 +107,7 @@ position_t AC_PathPlanner::run_circular_trajectory()
     }
 
     _t0 = AP_HAL::micros64();
-    hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, timer %f, idx %d\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz,_ftimer, _wp_idx);
+    hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, y %f, z %f\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz, _pos.y, _pos.z);
     return _pos_d;
 }
 
@@ -299,6 +303,9 @@ void AC_PathPlanner::get_default_target(float yd, float zd)
 {
     _wp_y[0] = yd;
     _wp_z[0] = zd;
+
+    _pos_d.y = yd;
+    _pos_d.z = zd;
 }
 
 void AC_PathPlanner::_check_flight_init()
