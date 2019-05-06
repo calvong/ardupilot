@@ -43,8 +43,8 @@ private:
     uint64_t _t0;
 
     // circular trajectory parameters
-    float _cir_radius = 0.3;            // circle radius
-    float _cir_height_offset = 0.7;     // height offset
+    float _cir_radius = 0.45;            // circle radius
+    float _cir_height_offset = 0.8;     // height offset
     float _w = 0.2;                    // time constant/frequency : small = slow
 
     // *** for setpoint tracking ***

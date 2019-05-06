@@ -8,6 +8,8 @@ AC_PathPlanner::AC_PathPlanner()
     _wp_idx = 0;
     _timer = 0;
 
+    _pos_d.ay = 0;
+    _pos_d.az = 0;
     _pos_d.vy = 0;
     _pos_d.vz = 0;
     _pos_d.y = 0;
@@ -107,7 +109,7 @@ position_t AC_PathPlanner::run_circular_trajectory()
     }
 
     _t0 = AP_HAL::micros64();
-    hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, y %f, z %f\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz, _pos.y, _pos.z);
+    //hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, y %f, z %f\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz, _pos.y, _pos.z);
     return _pos_d;
 }
 
@@ -242,62 +244,6 @@ position_t AC_PathPlanner::run_diagonal_trajectory()
     return _pos_d;
 }
 
-/*
-position_t AC_PathPlanner::run_trajectory()
-{
-    _check_flight_init();
-
-    if (_flags.start_flight && !_flags.atGoal)
-    {
-        float dt = (float) (AP_HAL::micros64() - _t0)*0.001f*0.001f;
-        //dt = 0.0025;
-
-        if (_pos_d.y < 0)
-        {
-            _pos_d.vy += ad * dt;
-            _pos_d.y  += _pos_d.vy * dt;
-        }
-        else if (_pos_d.y >= 0 && _pos_d.y < 0.5-DIST_THRES)
-        {
-            _pos_d.vy += -ad * dt;
-            _pos_d.y  += _pos_d.vy * dt;
-        }
-        else
-        {
-            _flags.yGoal = true;
-        }
-
-        if (_pos_d.z < 1.1)
-        {
-            _pos_d.vz += ad * dt;
-            _pos_d.z  += _pos_d.vz * dt;
-        }
-        else if (_pos_d.z >= 1.1 && _pos_d.z < 1.6-DIST_THRES)
-        {
-            _pos_d.vz += -ad * dt;
-            _pos_d.z  += _pos_d.vz * dt;
-        }
-        else
-        {
-            _flags.zGoal = true;
-        }
-
-        if (_flags.yGoal && _flags.zGoal)   _flags.atGoal = true;
-        _ftimer += dt;
-    }
-    else
-    {
-        _timer = 0;
-        _pos_d.vy = 0;
-        _pos_d.vz = 0;
-    }
-
-    _t0 = AP_HAL::micros64();
-    //hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, timer %f\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz,_ftimer);
-    return _pos_d;
-}
-*/
-
 
 void AC_PathPlanner::get_default_target(float yd, float zd)
 {
@@ -322,8 +268,8 @@ void AC_PathPlanner::_check_flight_init()
         _flags.atGoal = false;
         _flags.yGoal = false;
         _flags.zGoal = false;
-        _pos_d.y = -0.5;
-        _pos_d.z = 0.6;
+        _pos_d.y = _wp_y[0];
+        _pos_d.z = _wp_z[0];
         _timer = 0;
         _ftimer = 0;
         _wp_idx = 0;
