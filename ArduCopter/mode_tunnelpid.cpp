@@ -81,6 +81,8 @@ void Copter::ModeTunnelPID::run()
 
     target_roll = backstepping->update_PID_lateral_controller();
 
+    target_pitch = pp.pitch_oscillator();   // for experiment only
+
     // call attitude controller
     attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 
