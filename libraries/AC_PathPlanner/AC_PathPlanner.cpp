@@ -15,6 +15,11 @@ AC_PathPlanner::AC_PathPlanner()
     _pos_d.y = 0;
     _pos_d.z = 1;
 
+    // calculate time for line trajectory
+    float line_d = sqrt((_line_yd[0]-_line_yd[1])*(_line_yd[0]-_line_yd[1]) + (_line_zd[0] - _line_zd[1])*(_line_zd[0] - _line_zd[1]));
+
+    _line_period = 2 * sqrt(line_d/ad);
+
     _flags.atGoal = false;
     _flags.start_flight = false;
 }
@@ -25,40 +30,9 @@ position_t AC_PathPlanner::run_setpoint()
 
     _flags.start_flight = false; // only run a single setpoint
 
-    if (_flags.start_flight && !_flags.atGoal)
-    {
-        // check if reached goal
-        if (_wp_idx >= _nwp)
-        {
-            _flags.atGoal = true;
-        }
-        else
-        {
-            _pos_d.y = _wp_y[_wp_idx];
-            _pos_d.z = _wp_z[_wp_idx];
-        }
+    float dt = (float) (AP_HAL::micros64() - _t0)*0.001f*0.001f;
 
-        uint32_t dt = AP_HAL::micros64() - _t0;
-        _timer += dt;
-
-
-        if (_timer >= WAYPOINT_TIME_INTERVAL)
-        {
-            _wp_idx++;
-            _timer = 0;
-        }
-    }
-    else
-    {
-        _timer = 0;
-        _wp_idx = 0;
-
-        if (!_flags.atGoal)
-        {
-            _pos_d.y = _wp_y[0];
-            _pos_d.z = _wp_z[0];
-        }
-    }
+    _ftimer += dt;
 
     _t0 = AP_HAL::micros64();
     //hal.uartA->printf("yd %f, zd %f, timer %d\n", _pos_d.y, _pos_d.z , _timer);
@@ -115,134 +89,89 @@ position_t AC_PathPlanner::run_circular_trajectory()
     return _pos_d;
 }
 
-
-position_t AC_PathPlanner::run_diagonal_trajectory()
+position_t AC_PathPlanner::run_line_trajectory()
 {
     _check_flight_init();
 
-    if (_flags.start_flight && !_flags.atGoal)
+    static float last_v0_y;
+    static float last_v0_z;
+    static float last_y0;
+    static float last_z0;
+
+    if (_flags.start_flight)
     {
-        float dt = (float) (AP_HAL::micros64() - _t0)*0.001f*0.001f;
+        float dt = (float) (AP_HAL::micros64() - _t0)*0.001f*0.001f;    // second
 
-        switch (_wp_idx)
+        if (_wp_idx == 0)
         {
-            case 0:
-            {
-                if (_pos_d.y < 0)
-                {
-                    _pos_d.vy += ad * dt;
-                    _pos_d.y  += _pos_d.vy * dt;
-                }
-                else if (_pos_d.y >= 0 && _pos_d.y < 0.5-DIST_THRES)
-                {
-                    _pos_d.vy += -ad * dt;
-                    _pos_d.y  += _pos_d.vy * dt;
-                }
-                else
-                {
-                    _flags.yGoal = true;
-                }
+            // position
+            _pos_d.y = _line_yd[0];
+            _pos_d.z = _line_zd[0];
 
-                if (_pos_d.z < 1.1)
-                {
-                    _pos_d.vz += ad * dt;
-                    _pos_d.z  += _pos_d.vz * dt;
-                }
-                else if (_pos_d.z >= 1.1 && _pos_d.z < 1.6-DIST_THRES)
-                {
-                    _pos_d.vz += -ad * dt;
-                    _pos_d.z  += _pos_d.vz * dt;
-                }
-                else
-                {
-                    _flags.zGoal = true;
-                }
-                break;
-            }
-            case 1:
-            {
-                // y from 0.5 to -0.5
-                if (_pos_d.y > 0)
-                {
-                    _pos_d.vy += -ad * dt;
-                    _pos_d.y  += _pos_d.vy * dt;
-                }
-                else if (_pos_d.y <= 0 && _pos_d.y > -0.5+DIST_THRES)
-                {
-                    _pos_d.vy += ad * dt;
-                    _pos_d.y  += _pos_d.vy * dt;
-                }
-                else
-                {
-                    _flags.yGoal = true;
-                }
+            // velocity
+            _pos_d.vy = 0;//_cir_radius * _w * M_PI;
+            _pos_d.vz = 0;
 
-                // constant z
-                _flags.zGoal = true;
-                break;
-            }
-            case 2:
+            // check if reached the starting point
+            if (fabs(_pos_d.y - _pos.y) < DIST_THRES && fabs(_pos_d.z - _pos.z) < DIST_THRES)
             {
-                // y from -0.5 to 0.5
-                if (_pos_d.y > 0)
-                {
-                    _pos_d.vy += -ad * dt;
-                    _pos_d.y  += _pos_d.vy * dt;
-                }
-                else if (_pos_d.y <= 0 && _pos_d.y > -0.5+DIST_THRES)
-                {
-                    _pos_d.vy += ad * dt;
-                    _pos_d.y  += _pos_d.vy * dt;
-                }
-                else
-                {
-                    _flags.yGoal = true;
-                }
-
-                // z from 1.6 to 0.6
-                if (_pos_d.z > 1.1)
-                {
-                    _pos_d.vz += -ad * dt;
-                    _pos_d.z  += _pos_d.vz * dt;
-                }
-                else if (_pos_d.z <= 1.1 && _pos_d.z > 0.6+DIST_THRES)
-                {
-                    _pos_d.vz += ad * dt;
-                    _pos_d.z  += _pos_d.vz * dt;
-                }
-                else
-                {
-                    _flags.zGoal = true;
-                }
-                break;
+                _wp_idx++;
             }
         }
-
-        if (_flags.yGoal && _flags.zGoal)
+        else
         {
-            _wp_idx += 2;
-            _flags.yGoal = false;
-            _flags.zGoal = false;
-        }
+            if (_ftimer <= _line_period * 0.5f)  // +ve accel - from point 1 to point 2
+            {
+                _accel_dir = 1;
 
-        if (_wp_idx >= 3)
-        {
-            _flags.atGoal = true;
-            _wp_idx = 0;
-        }
+                _v0_y = 0;
+                _v0_z = 0;
 
-        _ftimer += dt;
-    }
-    else
-    {
-        _wp_idx = 0;
-        _timer = 0;
-        _pos_d.vy = 0;
-        _pos_d.vz = 0;
+                _y0 = 0;
+                _z0 = 0;
+
+                last_y0 = _pos_d.y;
+                last_z0 = _pos_d.z;
+
+                last_v0_y = _pos_d.vy;
+                last_v0_z = _pos_d.vz;
+            }
+            else if ((_ftimer < _line_period) && (_ftimer > _line_period * 0.5f))   // +ve accel - from point 2 to point 1
+            {
+                _accel_dir = -1;
+
+                _v0_y = last_v0_y;
+                _v0_z = last_v0_z;
+
+                _y0 = last_y0;
+                _z0 = last_z0;
+            }
+            else
+            {
+                _ftimer = 0;    // reset timer and trajectory
+            }
+
+            // acceleration
+            _pos_d.ay = 0;
+            _pos_d.az = 0;
+
+            if ((_line_yd[0]-_line_yd[1]) != 0) _pos_d.ay = ad * _accel_dir;
+            if ((_line_zd[0]-_line_zd[1]) != 0) _pos_d.az = ad * _accel_dir;
+
+            // velocity
+            _pos_d.vy = _pos_d.ay * _ftimer;
+            _pos_d.vz = _pos_d.az * _ftimer;
+
+            // position
+            _pos_d.y = _y0 + _v0_y * _ftimer + 0.5 * _pos_d.ay * _ftimer*_ftimer;
+            _pos_d.z = _z0 + _v0_z * _ftimer + 0.5 * _pos_d.az * _ftimer*_ftimer;
+
+            _ftimer += dt;
+        }
     }
 
     _t0 = AP_HAL::micros64();
-    //hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, timer %f, idx %d\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz,_ftimer, _wp_idx);
+    //hal.uartA->printf("yd %f, zd %f, vyd %f, vzd %f, y %f, z %f\n", _pos_d.y, _pos_d.z,_pos_d.vy, _pos_d.vz, _pos.y, _pos.z);
     return _pos_d;
 }
 
@@ -263,10 +192,35 @@ float AC_PathPlanner::pitch_oscillator(float pilot_pitch)
     {
         target_pitch = pilot_pitch;
     }
-    
+
+    //hal.uartA->printf("target pitch: %f, time: %f, manual: %f\n", target_pitch, _ftimer, manual_pitch_trim);
+
     return target_pitch;
 }
 
+
+float AC_PathPlanner::pitch_forward(float pilot_pitch)
+{
+    _check_flight_init();
+
+    float target_pitch = 0;
+
+    float manual_pitch_trim = pilot_pitch/2;
+
+    // in centidegree
+    if (_flags.start_flight)
+    {
+        target_pitch = PITCH_OSCILLATION * 100 + manual_pitch_trim;
+    }
+    else
+    {
+        target_pitch = pilot_pitch;
+    }
+
+    //hal.uartA->printf("target pitch: %f, time: %f, manual: %f\n", target_pitch, _ftimer, manual_pitch_trim);
+
+    return target_pitch;
+}
 
 void AC_PathPlanner::get_default_target(float yd, float zd)
 {

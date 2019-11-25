@@ -21,15 +21,16 @@ public:
 
     AC_PathPlanner();
     position_t run_setpoint();
-    position_t run_diagonal_trajectory();
     position_t run_circular_trajectory();
+    position_t run_line_trajectory();
     position_t get_target_pos();
     void get_current_pos(position_t pos);
     void get_default_target(float yd, float zd);
 
     // for experiment only
     float pitch_oscillator(float pilot_pitch);
-
+    float pitch_forward(float pilot_pitch);
+    
 private:
     struct flags_t
     {
@@ -48,9 +49,20 @@ private:
     uint64_t _t0;
 
     // circular trajectory parameters
-    float _cir_radius = 0.45;            // circle radius
-    float _cir_height_offset = 0.8;     // height offset
+    float _cir_radius = -0.7;            // circle radius
+    float _cir_height_offset = 0.9;     // height offset
     float _w = 0.2;                    // time constant/frequency : small = slow
+
+    // line trajectory parameters
+    float _line_yd[2] = {0, 0};
+    float _line_zd[2] = {0.3, 0.8};
+
+    int _accel_dir = 1; // +1 or -1 for acceleration
+    float _line_period;
+    float _v0_y = 0;
+    float _v0_z = 0;
+    float _y0 = 0;
+    float _z0 = 0;
 
     // *** for setpoint tracking ***
     // square

@@ -63,7 +63,7 @@ void Copter::ModeTunnelPID::run()
     pp.get_current_pos(pkf->get_pos());
 
     //position_t target_pos = pp.run_circular_trajectory();
-    position_t target_pos = pp.run_diagonal_trajectory();
+    position_t target_pos = pp.run_line_trajectory();
     //position_t target_pos = pp.run_setpoint();
 
     // update position and position target
@@ -81,7 +81,7 @@ void Copter::ModeTunnelPID::run()
 
     target_roll = backstepping->update_PID_lateral_controller();
 
-    target_pitch = pp.pitch_oscillator();   // for experiment only
+    //target_pitch = pp.pitch_oscillator(target_pitch);   // for experiment only
 
     // call attitude controller
     attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);

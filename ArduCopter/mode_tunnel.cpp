@@ -46,9 +46,9 @@ void Copter::ModeTunnel::run()
     pp.get_default_target(g.BS_yd, g.BS_zd);
 
     pp.get_current_pos(pkf->get_pos());
-    position_t target_pos = pp.run_circular_trajectory();
-    //position_t target_pos = pp.run_diagonal_trajectory();
-    //position_t target_pos = pp.run_setpoint();
+    //position_t target_pos = pp.run_circular_trajectory();
+    //position_t target_pos = pp.run_line_trajectory();
+    position_t target_pos = pp.run_setpoint();
 
     // call backstepping controller
     backstepping->get_target_pos(target_pos.y, target_pos.z);
@@ -61,7 +61,7 @@ void Copter::ModeTunnel::run()
 
     target_roll = backstepping->update_lateral_controller();
 
-    target_pitch = pp.pitch_oscillator();   // for experiment only
+    //target_pitch = pp.pitch_forward(target_pitch);   // for experiment only
 
     // call attitude controller
     attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
