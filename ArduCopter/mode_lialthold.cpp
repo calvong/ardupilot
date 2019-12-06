@@ -14,6 +14,8 @@ bool Copter::ModeLiAltHold::init(bool ignore_checks)
         pos_control->set_desired_velocity_z(inertial_nav.get_velocity_z());
     }
 
+    motors->armed(true);
+
     return true;
 }
 
@@ -21,6 +23,9 @@ bool Copter::ModeLiAltHold::init(bool ignore_checks)
 // should be called at 100hz or more
 void Copter::ModeLiAltHold::run()
 {
+
+    motors->output_test_seq(1, 1150);
+    /*
     AltHoldModeState althold_state;
     float takeoff_climb_rate = 0.0f;
 
@@ -127,4 +132,5 @@ void Copter::ModeLiAltHold::run()
         pos_control->update_z_controller();
         break;
     }
+    */
 }

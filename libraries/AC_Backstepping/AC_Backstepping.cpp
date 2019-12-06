@@ -33,6 +33,8 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
     //hal.uartA->begin(115200); // debug
 }
 
+
+
 void AC_Backstepping::update_alt_controller()
 {
     float cphi = _ahrs.cos_roll();  // cos(phi)
