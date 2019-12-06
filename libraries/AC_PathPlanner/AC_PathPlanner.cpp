@@ -13,7 +13,7 @@ AC_PathPlanner::AC_PathPlanner()
     _pos_d.vy = 0;
     _pos_d.vz = 0;
     _pos_d.y = 0;
-    _pos_d.z = 1;
+    _pos_d.z = 0.7;
 
     // calculate time for line trajectory
     float line_d = sqrt((_line_yd[0]-_line_yd[1])*(_line_yd[0]-_line_yd[1]) + (_line_zd[0] - _line_zd[1])*(_line_zd[0] - _line_zd[1]));
@@ -155,6 +155,7 @@ position_t AC_PathPlanner::run_line_trajectory()
             _pos_d.ay = 0;
             _pos_d.az = 0;
 
+            // TODO: bug fix
             if ((_line_yd[0]-_line_yd[1]) != 0) _pos_d.ay = ad * _accel_dir;
             if ((_line_zd[0]-_line_zd[1]) != 0) _pos_d.az = ad * _accel_dir;
 
