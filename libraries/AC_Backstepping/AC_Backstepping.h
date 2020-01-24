@@ -111,6 +111,8 @@ private:
     float _pilot_roll;      // pilot roll input
     float _BS_roll;         // desired roll output from backstepping
     float _roll_max;        // max roll angle
+    uint8_t _using_IBS;
+
 
     float _angle_transition(float target_roll);
     float _throttle_transition(float BS_thr_out);

@@ -172,8 +172,8 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,ROLL_D, YD, ZD, VYD, VZD, AYD, AZD",
-                                           "smmmmnn-mmnn-", "F000000000000", "Qffffffffffff",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,R_D, YD, ZD, VYD, VZD, AYD, AZD IBS",
+                                           "smmmmnn-mmnn--", "F0000000000000", "QddddddddddddB",
                                            AP_HAL::micros64(),
                                            (double) _pos.y,
                                            (double) _pos.z,
@@ -186,7 +186,8 @@ void AC_Backstepping::write_log()
                                            (double) _vel_target_y,
                                            (double) _vel_target_z,
                                            (double) _accel_target_y,
-                                           (double) _accel_target_z);
+                                           (double) _accel_target_z,
+                                           (uint8_t) _using_IBS);
 }
 
 void AC_Backstepping::reset_mode_switch()
