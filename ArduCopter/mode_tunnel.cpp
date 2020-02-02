@@ -47,8 +47,8 @@ void Copter::ModeTunnel::run()
 
     pp.get_current_pos(pkf->get_pos());
     //position_t target_pos = pp.run_circular_trajectory();
-    //position_t target_pos = pp.run_line_trajectory();
-    position_t target_pos = pp.run_setpoint();
+    position_t target_pos = pp.run_waypoint_trajectory();
+    //position_t target_pos = pp.run_setpoint();
 
     // call backstepping controller
     backstepping->get_target_pos(target_pos.y, target_pos.z);

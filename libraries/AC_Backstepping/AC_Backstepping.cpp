@@ -35,6 +35,8 @@ AC_Backstepping::AC_Backstepping(const AP_AHRS_View& ahrs, const AP_InertialNav&
 
 void AC_Backstepping::update_alt_controller()
 {
+    _using_IBS = 1;
+
     float cphi = _ahrs.cos_roll();  // cos(phi)
     float cthe = _ahrs.cos_pitch(); // cos(theta)
 
@@ -172,14 +174,13 @@ void AC_Backstepping::get_pilot_lean_angle_input(float target_roll, float roll_m
 void AC_Backstepping::write_log()
 {
     // write log to dataflash
-    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,U1,R_D, YD, ZD, VYD, VZD, AYD, AZD IBS",
-                                           "smmmmnn-mmnn--", "F0000000000000", "QddddddddddddB",
+    DataFlash_Class::instance()->Log_Write("BS", "TimeUS,KFY,KFZ,VELY,VELZ,R_D, YD, ZD, VYD, VZD, AYD, AZD,IBS",
+                                           "smmmnn-mmnn--", "F000000000000", "QdddddddddddB",
                                            AP_HAL::micros64(),
                                            (double) _pos.y,
                                            (double) _pos.z,
                                            (double) _pos.vy,
                                            (double) _pos.vz,
-                                           (double) _u1,
                                            (double) _target_roll,
                                            (double) _pos_target_y,
                                            (double) _pos_target_z,
@@ -335,6 +336,8 @@ float AC_Backstepping::get_u1()
 //==============================================================================
 float AC_Backstepping::update_PID_lateral_controller()
 {
+    _using_IBS = 0;
+
     // position error
     float ey = (_pos_target_y - _pos.y) * 100.0f;    // convert error from m to cm, so gain does not need to be a big number
 
